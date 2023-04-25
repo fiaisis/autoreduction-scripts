@@ -1,3 +1,9 @@
+import requests as requests
+
+with open("MARIReduction_Sample.py", "w+") as fle:
+    text = requests.get("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MARIReduction_Sample.py").text
+    fle.write(text)
+
 from __future__ import print_function
 from mantid import config
 from MARIReduction_Sample import *
@@ -11,7 +17,7 @@ if sys.version_info > (3,):
     else:
         from importlib import reload
 try:
-    #Note: due to the mantid-python implementation, one needs to run this 
+    #Note: due to the mantid-python implementation, one needs to run this
     #script in Mantid  script window  TWICE!!!  to deploy the the changes made to MARIReduction_Sample.py file.
     sys.path.insert(0,'/instrument/MARI/RBNumber/USER_RB_FOLDER/')
     reload(sys.modules['MARIReduction_Sample'])
@@ -27,7 +33,7 @@ ei=[30, 11.8]
 # White vanadium run number
 wbvan=28041
 # Default save directory
-config['defaultsave.directory'] = '/instrument/MARI/RBNumber/USER_RB_FOLDER' #data_dir 
+config['defaultsave.directory'] = '/instrument/MARI/RBNumber/USER_RB_FOLDER' #data_dir
 
 # Absolute normalisation parameters
 #monovan=21803
@@ -40,8 +46,8 @@ sam_rmm=0
 # Set to true to remove the constant ToF background from the data.
 remove_bkg = True
 
-# If necessary, add any sequence of reduction paramerters defined in MARIParameters.xml file 
-# to the end ot the illiad string using the form: property=value 
+# If necessary, add any sequence of reduction paramerters defined in MARIParameters.xml file
+# to the end ot the illiad string using the form: property=value
 # (e.g.:  iliad_mari(runno,ei,wbvan,monovan,sam_mass,sam_rmm,sum_runs,check_background=False)
 iliad_mari(runno, ei, wbvan, monovan, sam_mass, sam_rmm, sum_runs, check_background=remove_bkg,
     hard_mask_file='MASK_FILE_XML')
