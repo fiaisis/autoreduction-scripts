@@ -1,10 +1,12 @@
+from __future__ import print_function
+
 import requests as requests
 
 with open("MARIReduction_Sample.py", "w+") as fle:
     text = requests.get("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MARIReduction_Sample.py").text
     fle.write(text)
 
-from __future__ import print_function
+
 from mantid import config
 from MARIReduction_Sample import *
 import time
