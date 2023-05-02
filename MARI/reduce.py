@@ -33,7 +33,7 @@ sum_runs=False
 ei=[30, 11.8]
 
 # White vanadium run number
-wbvan=28041
+wbvan=28580
 
 # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
 config['defaultsave.directory'] = '/output' #data_dir 
