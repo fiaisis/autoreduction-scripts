@@ -5,6 +5,14 @@ import requests as requests
 with open("MARIReduction_Sample.py", "w+") as fle:
     text = requests.get("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MARIReduction_Sample.py").text
     fle.write(text)
+    
+with open("mask_file.xml", "w+" as fle:
+    text = requests.get("url_to_mask_file.xml").text
+    fle.write(text)
+    
+with open("mari_res2013.map", "w+" as fle:
+    text = requests.get("https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/964733aec28b00b13f32fb61afa363a74dd62130/mari/mari_res2013.map").text
+    fle.write(text)
 
 
 from mantid import config
@@ -52,7 +60,7 @@ remove_bkg = True
 # If necessary, add any sequence of reduction paramerters defined in MARIParameters.xml file
 # to the end ot the illiad string using the form: property=value
 # (e.g.:  iliad_mari(runno,ei,wbvan,monovan,sam_mass,sam_rmm,sum_runs,check_background=False)
-output_ws = iliad_mari(runno, ei, wbvan, monovan, sam_mass, sam_rmm, sum_runs, check_background=remove_bkg, hard_mask_file='MASK_FILE_XML')
+output_ws = iliad_mari(runno, ei, wbvan, monovan, sam_mass, sam_rmm, sum_runs, check_background=remove_bkg, hard_mask_file='mask_file.xml')
 
 # To run reduction _and_ compute density of states together uncomment this and comment iliad_mari above
 # bkgruns and runno can be lists, which means those runs will be summed, and the sum is reduced
