@@ -21,7 +21,7 @@ if sys.version_info > (3,):
 try:
     #Note: due to the mantid-python implementation, one needs to run this
     #script in Mantid  script window  TWICE!!!  to deploy the the changes made to MARIReduction_Sample.py file.
-    sys.path.insert(0,'/output')
+    sys.path.insert(0,'/output/autoreduced')
     reload(sys.modules['MARIReduction_Sample'])
 except:
     print("*** WARNING can not reload MARIReduction_Sample file")
@@ -36,7 +36,7 @@ ei=[30, 11.8]
 wbvan=28580
 
 # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
-config['defaultsave.directory'] = '/output' #data_dir 
+config['defaultsave.directory'] = '/output/autoreduced' #data_dir 
 
 # Absolute normalisation parameters
 #monovan=21803
@@ -60,4 +60,4 @@ output_ws = iliad_mari(runno, ei, wbvan, monovan, sam_mass, sam_rmm, sum_runs, c
 #iliad_dos(runno, wbvan, ei, monovan, sam_mass, sam_rmm, sum_runs, background=bkgrun, temperature=5)
 
 # Output set for autoreduction
-output = [f'/output/{output_ws.getName()}.nxs']
+output = [f'/output/autoreduced/{output_ws.getName()}.nxs']
