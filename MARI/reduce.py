@@ -55,12 +55,12 @@ sam_mass=0
 sam_rmm=0
 
 # Set to true to remove the constant ToF background from the data.
-remove_bkg = False
+remove_bkg = True
 
 # If necessary, add any sequence of reduction paramerters defined in MARIParameters.xml file
 # to the end ot the illiad string using the form: property=value
 # (e.g.:  iliad_mari(runno,ei,wbvan,monovan,sam_mass,sam_rmm,sum_runs,check_background=False)
-output_ws = iliad_mari(runno, ei, wbvan, monovan, sam_mass, sam_rmm, sum_runs, check_background=remove_bkg, hard_mask_file='mask_file.xml')
+output_ws = iliad_mari(runno, ei, wbvan, monovan, sam_mass, sam_rmm, sum_runs, check_background=False, hard_mask_file='mask_file.xml')
 
 # To run reduction _and_ compute density of states together uncomment this and comment iliad_mari above
 # bkgruns and runno can be lists, which means those runs will be summed, and the sum is reduced
