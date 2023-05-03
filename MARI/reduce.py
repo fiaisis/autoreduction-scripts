@@ -55,7 +55,7 @@ sam_mass=0
 sam_rmm=0
 
 # Set to true to remove the constant ToF background from the data.
-remove_bkg = True
+remove_bkg = False
 
 # If necessary, add any sequence of reduction paramerters defined in MARIParameters.xml file
 # to the end ot the illiad string using the form: property=value
