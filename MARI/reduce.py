@@ -5,40 +5,47 @@ import os
 
 output_dir = "/output"
 
+########################
+# Begin autoreduction inserted code
 
-def _get_sample_script() -> None:
-    attempts = 0
+def get_file_from_request(url: str, path: str) -> None:
+    """
+    write the file from the url to the given path, retrying at most 3 times
+    :param url: the url to get
+    :param path: the path to write to
+    :return: None
+    """
     success = False
-    wait_time = 5
-    while attempts <= 3:
-        with open("MARIReduction_Sample.py", "w+") as fle:
-            response = requests.get("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MARIReduction_Sample.py")
-            if not response.ok or "html" in response.text:
-                print(f"Failed to get sample script, waiting {wait_time}seconds and trying again...")
-                time.sleep(wait_time)
-                wait_time *= 3
-                attempts += 1
-                continue
-            text = response.text
-            fle.write(text)
+    attempts = 0
+    wait_time_seconds = 15
+    while attempts < 3:
+        print(f"Attempting to get resource {url}")
+        response = requests.get(url)
+        if not response.ok:
+            print(f"Failed to get resource from: {url}")
+            print(f"Waiting {wait_time_seconds}...")
+            time.sleep(wait_time_seconds)
+            attempts += 1
+            wait_time_seconds *= 3
+        else:
+            with open(path, "w+") as fle:
+                fle.write(response.text)
             success = True
             break
+
     if not success:
-        print("Could not obtain the mari sample script, reduction is not possible")
-        raise RuntimeError("Could not obtain the mari sample script, reduction is not possible")
-  
-with open("mask_file.xml", "w+") as fle:
-    text = requests.get("url_to_mask_file.xml").text
-    fle.write(text)
-    
-
-with open("mari_res2013.map", "w+") as fle:
-    text = requests.get(
-        "https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/964733aec28b00b13f32fb61afa363a74dd62130/mari/mari_res2013.map").text
-    fle.write(text)
+        raise RuntimeError(f"Reduction not possible with missing resource {url}")
 
 
-_get_sample_script()
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/"
+                      "MARI/MARIReduction_Sample.py", "MARIReduction_Sample.py")
+get_file_from_request("url_to_mask_file.xml", "mask_file.xml")
+get_file_from_request("https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/"
+                      "964733aec28b00b13f32fb61afa363a74dd62130/mari/mari_res2013.map", "mari_res2013.map")
+
+# End autoreduction inserted code
+########################################
+
 
 def get_output_files():
     files = [f for f in os.listdir(output_dir) if os.path.isfile(os.path.join(output_dir, f))]
