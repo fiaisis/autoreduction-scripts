@@ -2,10 +2,28 @@ from __future__ import print_function
 
 import requests as requests
 
-with open("MARIReduction_Sample.py", "w+") as fle:
-    text = requests.get("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MARIReduction_Sample.py").text
-    fle.write(text)
+def _get_sample_script() -> None:
+    attempts = 0
+    success = False
+    wait_time = 5
+    while attempts <= 3:
+        with open("MARIReduction_Sample.py", "w+") as fle:
+            response = requests.get("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MARIReduction_Sample.py")
+            if not response.ok or "html" in response.text:
+                print(f"Failed to get sample script, waiting {wait_time}seconds and trying again...")
+                time.sleep(wait_time)
+                wait_time *= 3
+                attempts += 1
+                continue
+            text = response.text
+            fle.write(text)
+            success = True
+            break
+    if not success:
+        print("Could not obtain the mari sample script, reduction is not possible")
+        raise RuntimeError("Could not obtain the mari sample script, reduction is not possible")
 
+_get_sample_script()
 
 from mantid import config
 from MARIReduction_Sample import *
