@@ -46,4 +46,5 @@ jobs:
         with:
           title: AUTOMATED_SCRIPT_UPDATE_PR
           body: Manually compare the original to the autoreduction script, make necessary changes then merge
+          reviewers: keiranjprice101,Pasarus
 
