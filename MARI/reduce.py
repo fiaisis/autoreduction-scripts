@@ -5,8 +5,6 @@ import os
 
 output_dir = "/output"
 
-########################
-# Begin autoreduction inserted code
 
 def get_file_from_request(url: str, path: str) -> None:
     """
@@ -42,9 +40,6 @@ get_file_from_request("https://raw.githubusercontent.com/mantidproject/scriptrep
 get_file_from_request("url_to_mask_file.xml", "mask_file.xml") # This url is inserted by IR-API transform
 get_file_from_request("https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/"
                       "964733aec28b00b13f32fb61afa363a74dd62130/mari/mari_res2013.map", "mari_res2013.map")
-
-# End autoreduction inserted code
-########################################
 
 
 def get_output_files():
