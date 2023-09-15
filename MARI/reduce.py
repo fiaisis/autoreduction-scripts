@@ -5,20 +5,41 @@ import os
 
 output_dir = "/output"
 
-with open("MARIReduction_Sample.py", "w+") as fle:
-    text = requests.get(
-        "https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/MARI/MARIReduction_Sample.py").text
-    fle.write(text)
-    
-with open("mask_file.xml", "w+") as fle:
-    text = requests.get("url_to_mask_file.xml").text
-    fle.write(text)
-    
 
-with open("mari_res2013.map", "w+") as fle:
-    text = requests.get(
-        "https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/964733aec28b00b13f32fb61afa363a74dd62130/mari/mari_res2013.map").text
-    fle.write(text)
+def get_file_from_request(url: str, path: str) -> None:
+    """
+    write the file from the url to the given path, retrying at most 3 times
+    :param url: the url to get
+    :param path: the path to write to
+    :return: None
+    """
+    success = False
+    attempts = 0
+    wait_time_seconds = 15
+    while attempts < 3:
+        print(f"Attempting to get resource {url}")
+        response = requests.get(url)
+        if not response.ok:
+            print(f"Failed to get resource from: {url}")
+            print(f"Waiting {wait_time_seconds}...")
+            time.sleep(wait_time_seconds)
+            attempts += 1
+            wait_time_seconds *= 3
+        else:
+            with open(path, "w+") as fle:
+                fle.write(response.text)
+            success = True
+            break
+
+    if not success:
+        raise RuntimeError(f"Reduction not possible with missing resource {url}")
+
+
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/"
+                      "MARI/MARIReduction_Sample.py", "MARIReduction_Sample.py")
+get_file_from_request("url_to_mask_file.xml", "mask_file.xml") # This url is inserted by IR-API transform
+get_file_from_request("https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/"
+                      "964733aec28b00b13f32fb61afa363a74dd62130/mari/mari_res2013.map", "mari_res2013.map")
 
 
 def get_output_files():
