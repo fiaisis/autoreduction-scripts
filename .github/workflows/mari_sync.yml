@@ -3,7 +3,7 @@ name: Automated Mari Update
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Run every 10 minutes
+    - cron: '13 3 * * *'  # Run once a day at 3:13 AM
 
 jobs:
   update:
