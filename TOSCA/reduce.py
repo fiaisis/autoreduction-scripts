@@ -28,7 +28,7 @@ input_file_paths = input_file_paths[2:]
 print(input_file_paths)
 original_ws = Load(generate_input_path_for_run(input_runs[0], cycle))
 run_title = original_ws.getTitle()
-output_workspace_name = f"{instrument.lower()}{input_runs[0]}-{run_title}"
+output_workspace_name = f"{instrument.lower()}{input_runs[0]}-{run_title}-autoreduced"
 
 # Run the script
 output_ws = ISISIndirectEnergyTransferWrapper(InputFiles=input_file_paths,
