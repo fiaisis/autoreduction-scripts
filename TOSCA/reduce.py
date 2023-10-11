@@ -53,3 +53,11 @@ SaveNexusProcessed(output_ws, f"{save_path}{save_file_name}")
 
 # Setup the output variable
 output = save_file_name
+
+# Not part of the script
+from mantid.api import AlgorithmManager
+import time
+
+AlgorithmManager.cancelAll()
+while len(AlgorithmManager.runningInstancesOf('DownloadInstrument')) > 0:
+    time.sleep(0.1)
