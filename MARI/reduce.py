@@ -34,9 +34,15 @@ def get_file_from_request(url: str, path: str) -> None:
     if not success:
         raise RuntimeError(f"Reduction not possible with missing resource {url}")
 
+# Only needed for fixes with regards to reductions during MARI issues 
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/reduction_utils.py", "reduction_utils.py")
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/DG_whitevan.py", "DG_whitevan.py")
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/DG_reduction.py", "DG_reduction.py")
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/DG_monovan.py", "DG_monovan.py")
 
-get_file_from_request("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/"
-                      "MARI/MARIReduction_Sample.py", "MARIReduction_Sample.py")
+# Temporarily not needed:
+# get_file_from_request("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/"
+#                       "MARI/MARIReduction_Sample.py", "MARIReduction_Sample.py")
 get_file_from_request("url_to_mask_file.xml", "mask_file.xml") # This url is inserted by IR-API transform
 get_file_from_request("https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/"
                       "964733aec28b00b13f32fb61afa363a74dd62130/mari/mari_res2013.map", "mari_res2013.map")
@@ -50,7 +56,10 @@ def get_output_files():
 original_files = get_output_files()
 
 from mantid import config
-from MARIReduction_Sample import *
+# Temporarily not needed
+# from MARIReduction_Sample import *
+# Temporarily needed
+from reduction_utils import iliad as iliad_mari
 import time
 import datetime
 import sys
@@ -69,13 +78,14 @@ except:
     print("*** WARNING can not reload MARIReduction_Sample file")
     pass
 
-# Run number and Ei
-runno = 28581
+# Run number, Ei, sum_runs, and sub_ana
+runno = 29170
 sum_runs = False
 ei = 'auto'
+sub_ana = True
 
 # White vanadium run number
-wbvan = 28580
+wbvan = 29111
 
 # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
 config['defaultsave.directory'] = output_dir  # data_dir
@@ -91,11 +101,9 @@ sam_rmm = 0
 # Set to true to remove the constant ToF background from the data.
 remove_bkg = True
 
-# If necessary, add any sequence of reduction paramerters defined in MARIParameters.xml file
-# to the end ot the illiad string using the form: property=value
-# (e.g.:  iliad_mari(runno,ei,wbvan,monovan,sam_mass,sam_rmm,sum_runs,check_background=False)
-output_ws = iliad_mari(runno, ei, wbvan, monovan, sam_mass, sam_rmm, sum_runs, check_background=remove_bkg,
-                       hard_mask_file='mask_file.xml')
+# This is the main reduction call made in the script
+output_ws = iliad_mari(runno=runno, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
+                       sub_ana=sub_ana, hard_mask_file='mask_file.xml')
 
 # To run reduction _and_ compute density of states together uncomment this and comment iliad_mari above
 # bkgruns and runno can be lists, which means those runs will be summed, and the sum is reduced
