@@ -35,10 +35,10 @@ def get_file_from_request(url: str, path: str) -> None:
         raise RuntimeError(f"Reduction not possible with missing resource {url}")
 
 # Only needed for fixes with regards to reductions during MARI issues 
-get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/reduction_utils.py", "reduction_utils.py")
-get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/DG_whitevan.py", "DG_whitevan.py")
-get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/DG_reduction.py", "DG_reduction.py")
-get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/1f524c0fafb552cc785db10c32233554fa1e613c/reduction_files/DG_monovan.py", "DG_monovan.py")
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/b53a88e8510e473dd23176aa0f126ded09deb61e/reduction_files/reduction_utils.py", "reduction_utils.py")
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/b53a88e8510e473dd23176aa0f126ded09deb61e/reduction_files/DG_whitevan.py", "DG_whitevan.py")
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/b53a88e8510e473dd23176aa0f126ded09deb61e/reduction_files/DG_reduction.py", "DG_reduction.py")
+get_file_from_request("https://raw.githubusercontent.com/mantidproject/direct_reduction/b53a88e8510e473dd23176aa0f126ded09deb61e/reduction_files/DG_monovan.py", "DG_monovan.py")
 
 # Temporarily not needed:
 # get_file_from_request("https://raw.githubusercontent.com/mantidproject/scriptrepository/master/direct_inelastic/"
