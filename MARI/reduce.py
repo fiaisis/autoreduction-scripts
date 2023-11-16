@@ -17,11 +17,11 @@ def get_file_from_request(url: str, path: str) -> None:
     attempts = 0
     wait_time_seconds = 15
     while attempts < 3:
-        print(f"Attempting to get resource {url}")
+        print(f"Attempting to get resource {url}", flush=True)
         response = requests.get(url)
         if not response.ok:
-            print(f"Failed to get resource from: {url}")
-            print(f"Waiting {wait_time_seconds}...")
+            print(f"Failed to get resource from: {url}", flush=True)
+            print(f"Waiting {wait_time_seconds}...", flush=True)
             time.sleep(wait_time_seconds)
             attempts += 1
             wait_time_seconds *= 3
