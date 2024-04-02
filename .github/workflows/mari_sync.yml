@@ -13,7 +13,7 @@ jobs:
       - name: Check if PR already exists
         id: check_pr
         run: |
-          PR_EXISTS=$(curl -s "https://api.github.com/repos/InteractiveReduction/autoreduction-scripts/pulls?state=open" | grep "AUTOMATED_SCRIPT_UPDATE_PR" | wc -c)
+          PR_EXISTS=$(curl -s "https://api.github.com/repos/fiaisis/autoreduction-scripts/pulls?state=open" | grep "AUTOMATED_SCRIPT_UPDATE_PR" | wc -c)
           echo "::set-output name=exists::$PR_EXISTS"
         # We are querying the api for all PRs then greping for the expected title, then checking the length of the output
         # if the output length is not 0 then the PR already exists
