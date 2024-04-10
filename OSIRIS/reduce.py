@@ -34,7 +34,7 @@ sum_runs = len(input_runs) > 1
 input_file_paths = ""
 for input_run in input_runs:
     input_file_paths += ", " + generate_input_path_for_run(input_run, cycle)
-input_file_paths = input_file_paths[2:]
+input_file_paths = input_file_paths[2:]  # Slice out the excess ", "
 print(input_file_paths)
 
 output_workspaces = []
@@ -44,7 +44,7 @@ if spectroscopy_reduction:
     output_workspace_prefix = instrument
     for input_run in input_runs:
         output_workspace_prefix += input_run + ", "
-    output_workspace_prefix = output_workspace_prefix[:-2] + f"_{analyser}_{reflection}_Reduced"
+    output_workspace_prefix = output_workspace_prefix[:-2] + f"_{analyser}_{reflection}_Reduced"  # Slice out the excess ", " and finalize prefix
     
     print("Producing a spectroscopy reduction")
     # Load calibration workspace
