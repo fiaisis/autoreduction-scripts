@@ -113,5 +113,3 @@ output_ws = iliad_mari(runno=runno, ei=ei, wbvan=wbvan, monovan=monovan, sam_mas
 # Output set for autoreduction
 now_files = get_output_files()
 output = list(set(original_files).symmetric_difference(set(now_files)))
-if not output:
-    output = now_files
