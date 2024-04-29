@@ -14,8 +14,8 @@ calibration_file_path = "/extras/osi92682_multi_graphite002_calib.nxs"
 cycle = "cycle_14_1"
 analyser = "graphite"
 reflection = "002"
-spectroscopy_reduction = True
-diffraction_reduction = True
+spectroscopy_reduction = False
+diffraction_reduction = False
 
 # Defaults
 instrument = "OSIRIS"
@@ -63,24 +63,27 @@ if spectroscopy_reduction:
     output_workspaces.append(output_spec_ws_grouping)
     output_workspaces.append(output_spec_ws_individual)
 
-if diffraction_reduction:
-    print("Producing a spectroscopy reduction")
-    # If diffonly then cal file and vanadium runs are required for this, else they can be turned off. diffspec also has an optional Rebin in D Spacing option.
-    if spectroscopy_reduction:
-        reflection = "diffspec"
-        output_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, CalFile=calibration_file_path, Instrument=instrument, SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
-        output_workspaces.append(output_ws)
-    else:
-        for run_number in input_runs:
-            ws_name = instrument + run_number
-            drange_ws = OSIRISDiffractionReduction(Sample=ws_name, CalFile=calibration_file_path, OutputWorkspace=f'{ws_name}_dRange')
-            q_ws = ConvertUnits(InputWorkspace=drange_ws, OutputWorkspace=f'{ws_name}_q', Target='QSquared')
-            tof_ws = ConvertUnits(InputWorkspace=drange_ws, OutputWorkspace=f'{ws_name}_tof', Target='TOF')
-            output_workspaces.append(drange_ws)
-            output_workspaces.append(q_ws)
-            output_workspaces.append(tof_ws)
+    # Also perform the diffspec reduction using the diffraction algorithm
+    print("Reducing in diffspec mode using diffraction algorithm")
+    output_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, CalFile=calibration_file_path, Instrument=instrument, SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
+    output_workspaces.append(output_ws)
 
+elif diffraction_reduction:
+    print("Producing a diffraction reduction")
+    for run_number in input_runs:
+        ws_name = instrument + run_number
+        drange_ws = OSIRISDiffractionReduction(Sample=ws_name, CalFile=calibration_file_path, OutputWorkspace=f'{ws_name}_dRange')
+        q_ws = ConvertUnits(InputWorkspace=drange_ws, OutputWorkspace=f'{ws_name}_q', Target='QSquared')
+        tof_ws = ConvertUnits(InputWorkspace=drange_ws, OutputWorkspace=f'{ws_name}_tof', Target='TOF')
+        output_workspaces.append(drange_ws)
+        output_workspaces.append(q_ws)
+        output_workspaces.append(tof_ws)
+else:
+    raise RuntimeError("Both spectroscopy_reduction and diffraction_reduction are set to false.")
+            
+output = []
 for workspace in output_workspaces:
     save_file_name = f"{output_ws.name()}.nxs"
-    save_path = f"/output/"
-    SaveNexusProcessed(workspace, f"{save_path}{save_file_name}")
+    save_path = f"/output/{save_file_name}"
+    SaveNexusProcessed(workspace, save_path)
+    output.append(save_file_name)
