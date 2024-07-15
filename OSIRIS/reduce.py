@@ -65,7 +65,6 @@ def generate_spec_calibration_workspace():
     spectrum.setSpectrumNo(int(spectra_min))
     spectrum.clearDetectorIDs()
     spectrum.addDetectorID(int(spectra_min))
-    efixed = instrument_workspace.getInstrument().getComponentByName(analyser).getNumberParameter("Efixed")[0]
     tof_workspace = ConvertUnits(InputWorkspace="energy_workspace", OutputWorkspace="tof_workspace", Target="TOF", EMode="Indirect", EFixed=efixed)
     tof_data = tof_workspace.readX(0)
 
