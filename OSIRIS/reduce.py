@@ -54,7 +54,10 @@ instrument = "OSIRIS"
 instrument_definition_directory = ConfigService.Instance().getString("instrumentDefinition.directory")
 instrument_filename = instrument_definition_directory + instrument + "_Definition.xml"
 instrument_workspace = LoadEmptyInstrument(Filename=instrument_filename, OutputWorkspace="instrument_workspace")
+parameter_filename = instrument_definition_directory + instrument + "_" + analyser + "_" + reflection + "_Parameters.xml"
+parameter_file = LoadParameterFile(Filename=parameter_filename, Workspace="instrument_workspace")
 efixed = instrument_workspace.getInstrument().getComponentByName(analyser).getNumberParameter("Efixed")[0]
+print(efixed)
 spec_spectra_range = "963,1004"
 diff_spectra_range = '3,962'
 unit_x = "DeltaE"
@@ -79,8 +82,8 @@ def generate_spec_calibration_workspace():
     # instrument_definition_directory = ConfigService.Instance().getString("instrumentDefinition.directory")
     # instrument_filename = instrument_definition_directory + instrument + "_Definition.xml"
     # instrument_workspace = LoadEmptyInstrument(Filename=instrument_filename, OutputWorkspace="instrument_workspace")
-    parameter_filename = instrument_definition_directory + instrument + "_" + analyser + "_" + reflection + "_Parameters.xml"
-    parameter_file = LoadParameterFile(Filename=parameter_filename, Workspace="instrument_workspace")
+    # parameter_filename = instrument_definition_directory + instrument + "_" + analyser + "_" + reflection + "_Parameters.xml"
+    # parameter_file = LoadParameterFile(Filename=parameter_filename, Workspace="instrument_workspace")
     resolution = instrument_workspace.getInstrument().getComponentByName(analyser).getNumberParameter("resolution", True)[0]
     x = [-6 * resolution, -5 * resolution, -2 * resolution, 0, 2 * resolution]
     y = [1, 2, 3, 4]
@@ -109,7 +112,7 @@ if spectroscopy_reduction:
  
     output_workspace_prefix = instrument
     for input_run in input_runs:
-        output_workspace_prefix += input_run + ", "
+        output_workspace_prefix += input_run + ","
     output_workspace_prefix = output_workspace_prefix[:-2] + f"_{analyser}_{reflection}_Reduced"  # Slice out the excess ", " and finalize prefix
     
     output_spec_ws_individual = ISISIndirectEnergyTransferWrapper(OutputWorkspace=output_workspace_prefix + "-individual", GroupingMethod="Individual", InputFiles=input_file_paths, SumFiles=sum_runs, CalibrationWorkspace=calibration_workspace, Instrument=instrument, Analyser=analyser, Reflection=reflection, EFixed=efixed, SpectraRange=spec_spectra_range, FoldMultipleFrames=fold_multiple_frames, UnitX=unit_x)
