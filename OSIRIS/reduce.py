@@ -67,7 +67,8 @@ def generate_spec_calibration_workspace():
     return IndirectCalibration(InputFiles=calibration_input_files, DetectorRange=spec_spectra_range, PeakRange=peak_range, BackgroundRange=background_range, ScaleByFactor=0, ScaleFactor=1, LoadLogFiles=0, OutputWorkspace=calibration_workspace_name)
 
 # Perform the reduction
-if spectroscopy_reduction: 
+if spectroscopy_reduction:
+    calibration_workspace = generate_spec_calibration_workspace()
     output_workspace_prefix = instrument
     for input_run in input_runs:
         output_workspace_prefix += str(input_run) + ","
