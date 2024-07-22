@@ -2,10 +2,39 @@
 from mantid.simpleapi import *
 import matplotlib.pyplot as plt
 import numpy as np
+import requests as requests
 
 
 def generate_input_path_for_run(run_number, cycle):
     return f"/archive/ndxosiris/Instrument/data/{cycle}/OSI{run_number}.nxs"
+
+def get_file_from_request(url: str, path: str) -> None:
+    """
+    write the file from the url to the given path, retrying at most 3 times
+    :param url: the url to get
+    :param path: the path to write to
+    :return: None
+    """
+    success = False
+    attempts = 0
+    wait_time_seconds = 15
+    while attempts < 3:
+        print(f"Attempting to get resource {url}", flush=True)
+        response = requests.get(url)
+        if not response.ok:
+            print(f"Failed to get resource from: {url}", flush=True)
+            print(f"Waiting {wait_time_seconds}...", flush=True)
+            time.sleep(wait_time_seconds)
+            attempts += 1
+            wait_time_seconds *= 3
+        else:
+            with open(path, "w+") as fle:
+                fle.write(response.text)
+            success = True
+            break
+
+    if not success:
+        raise RuntimeError(f"Reduction not possible with missing resource {url}")
 
 # To change by automatic script
 input_runs = ["108538", "108539"]
@@ -31,7 +60,7 @@ diff_spectra_range = '3,962'
 unit_x = "DeltaE"
 fold_multiple_frames = False
 diffraction_calibration_file = "osiris_041_RES10.cal"
-diffraction_calibration_filepath = f"/extras/{diffraction_calibration_file}"
+get_file_from_request("https://raw.githubusercontent.com/fiaisis/autoreduction-scripts/cbf4e37365e112334bc7cee601553ebd0dbacc1d/OSIRIS/osiris_041_RES10.cal", diffraction_calibration_file)
 
 # Generated
 sum_runs = len(input_runs) > 1
@@ -92,7 +121,7 @@ if spectroscopy_reduction:
 
     # Also perform the diffspec reduction using the diffraction algorithm
     print("Reducing in diffspec mode using diffraction algorithm")
-    output_diffspec_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, CalFile=diffraction_calibration_filepath, Instrument=instrument, SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
+    output_diffspec_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, CalFile=diffraction_calibration_file, Instrument=instrument, SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
     output_workspaces.append(output_diffspec_ws)
 # 
 # elif diffraction_reduction:
