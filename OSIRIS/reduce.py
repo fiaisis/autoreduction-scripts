@@ -56,7 +56,6 @@ instrument_workspace = LoadEmptyInstrument(Filename=instrument_filename, OutputW
 parameter_filename = instrument_definition_directory + instrument + "_" + analyser + "_" + reflection + "_Parameters.xml"
 parameter_file = LoadParameterFile(Filename=parameter_filename, Workspace="instrument_workspace")
 efixed = instrument_workspace.getInstrument().getComponentByName(analyser).getNumberParameter("Efixed")[0]
-print(efixed)
 spec_spectra_range = "963,1004"
 diff_spectra_range = '3,962'
 unit_x = "DeltaE"
