@@ -103,9 +103,7 @@ def generate_spec_calibration_workspace():
     return IndirectCalibration(InputFiles=calibration_input_files, DetectorRange=spec_spectra_range, PeakRange=peak_range, BackgroundRange=background_range, ScaleByFactor=0, ScaleFactor=1, LoadLogFiles=0, OutputWorkspace=calibration_workspace_name)
 
 # Perform the reduction
-if spectroscopy_reduction:
-    calibration_workspace = generate_spec_calibration_workspace()
- 
+if spectroscopy_reduction: 
     output_workspace_prefix = instrument
     for input_run in input_runs:
         output_workspace_prefix += str(input_run) + ","
@@ -124,6 +122,7 @@ if spectroscopy_reduction:
     output_workspaces.append(output_diffspec_ws)
 # 
 # elif diffraction_reduction:
+#     calibration_workspace = generate_spec_calibration_workspace()
 #     print("Producing a diffraction reduction")
 #     for run_number in input_runs:
 #         ws_name = instrument + run_number
