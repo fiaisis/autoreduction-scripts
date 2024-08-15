@@ -39,7 +39,7 @@ for input_run in input_runs:
     input_file_paths += ", " + generate_input_path_for_run(input_run, cycle)
 input_file_paths = input_file_paths[2:]  # Slice out the excess ", "
 print(input_file_paths)
-output_workspaces = []
+output = []
 
 
 # Generate calibration workspace function
@@ -66,6 +66,12 @@ def generate_spec_calibration_workspace():
     calibration_workspace_name = "osiris" + calibration_run_number + "_" + analyser + reflection + "_calib"
     return IndirectCalibration(InputFiles=calibration_input_files, DetectorRange=spec_spectra_range, PeakRange=peak_range, BackgroundRange=background_range, ScaleByFactor=0, ScaleFactor=1, LoadLogFiles=0, OutputWorkspace=calibration_workspace_name)
 
+def save_workspace(workspace):
+    save_file_name = f"{workspace.name()}.nxs"
+    save_path = f"/output/{save_file_name}"
+    SaveNexusProcessed(workspace, save_path)
+    output.append(save_file_name)
+
 # Perform the reduction
 if spectroscopy_reduction:
     calibration_workspace = generate_spec_calibration_workspace()
@@ -75,16 +81,14 @@ if spectroscopy_reduction:
     output_workspace_prefix = output_workspace_prefix[:-1] + f"_{analyser}_{reflection}_Reduced"  # Slice out the excess "," and finalize prefix
     
     output_spec_ws_individual = ISISIndirectEnergyTransferWrapper(OutputWorkspace=output_workspace_prefix + "-individual", GroupingMethod="Individual", InputFiles=input_file_paths, SumFiles=sum_runs, CalibrationWorkspace=calibration_workspace, Instrument=instrument, Analyser=analyser, Reflection=reflection, EFixed=efixed, SpectraRange=spec_spectra_range, FoldMultipleFrames=fold_multiple_frames, UnitX=unit_x)
-
+    save_workspace(output_spec_ws_individual)
+    
     output_spec_ws_all = ISISIndirectEnergyTransferWrapper(OutputWorkspace=output_workspace_prefix + "-all", GroupingMethod="All", InputFiles=input_file_paths, SumFiles=sum_runs, CalibrationWorkspace=calibration_workspace, Instrument=instrument, Analyser=analyser, Reflection=reflection, EFixed=efixed, SpectraRange=spec_spectra_range, FoldMultipleFrames=fold_multiple_frames, UnitX=unit_x)
-
-    output_workspaces.append(output_spec_ws_individual)
-    output_workspaces.append(output_spec_ws_all)
+    save_workspace(output_spec_ws_all)
 
     # Also perform the diffspec reduction using the diffraction algorithm
-    print("Reducing in diffspec mode using diffraction algorithm")
     output_diffspec_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, CalFile=diffraction_calibration_file, Instrument=instrument, SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
-    output_workspaces.append(output_diffspec_ws)
+    save_workspace(output_diffspec_ws)
 # 
 # elif diffraction_reduction:
 #     print("Producing a diffraction reduction")
@@ -96,10 +100,3 @@ if spectroscopy_reduction:
 #         output_workspaces.append(drange_ws)
 #         output_workspaces.append(q_ws)
 #         output_workspaces.append(tof_ws)
-        
-output = []
-for workspace in output_workspaces:
-    save_file_name = f"{workspace.name()}.nxs"
-    save_path = f"/output/{save_file_name}"
-    SaveNexusProcessed(workspace, save_path)
-    output.append(save_file_name)
