@@ -22,8 +22,6 @@ can_transmission = "74020"
 can_transmission_period = 1
 can_direct = "74014"
 can_direct_period = 1
-
-output_name = "output_ws"
 sample_thickness = 1.0
 sample_geometry = "Disc"
 
@@ -34,11 +32,6 @@ instrument = "LOQ"
 multi_period = False
 
 # Save and reduction options
-reduction_type = "1D"
-save_options = "memory"
-save_type = "NxCanSAS"
-zero_error_free = True
-use_optimizations = True
 reduction_mode = "Merged"
 merge_fit_mode = "NoFit"
 reduction_scale_factor = 1.0 
