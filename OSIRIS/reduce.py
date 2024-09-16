@@ -30,7 +30,7 @@ spec_spectra_range = "963,1004"
 diff_spectra_range = '3,962'
 unit_x = "DeltaE"
 fold_multiple_frames = False
-diffraction_calibration_file = "/extras/osiris_041_RES10.cal"
+diffraction_calibration_file = "/extras/osiris/osiris_041_RES10.cal"
 
 sum_runs = len(input_runs) > 1
 
