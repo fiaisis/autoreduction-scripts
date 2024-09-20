@@ -90,7 +90,6 @@ for i in range(len(wavs) - 1):
     output_workspaces_overlap_reductions_name_string += f", {ici.WavRangeReduction(wavs[i], wavs[i + 1], False, combineDet='merged')}"
 overlap_reduction_name = "overlap_reduction_group_workspaces"
 GroupWorkspaces(InputWorkspaces=output_workspaces_overlap_reductions_name_string, OutputWorkspace=overlap_reduction_name)
-SaveNXcanSAS(overlap_reduction_name, f"{output_path}/{overlap_reduction_name}.h5")
 SaveNexusProcessed(overlap_reduction_name, f"{output_path}/{overlap_reduction_name}.nxs")
 output.extend(overlap_reduction_name)
 
