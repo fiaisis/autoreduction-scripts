@@ -117,5 +117,3 @@ save_sector_reduction(output_workspaces, "_horizontal_sector")
 ici.SetPhiLimit(60, 120, use_mirror=True)
 output_workspaces=ici.WavRangeReduction(None, None, ici.DefaultTrans, combineDet="merged")
 save_sector_reduction(output_workspaces, "_vertical_sector")
-
-    output.append(workspace.name)
