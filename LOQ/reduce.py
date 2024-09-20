@@ -1,4 +1,6 @@
 import math
+import math
+
 import numpy
 from mantid.simpleapi import RenameWorkspace, SaveRKH, SaveNXcanSAS, GroupWorkspaces, SaveNexusProcessed
 from mantid import config
@@ -70,9 +72,9 @@ output_workspace_1d_hab = output_workspace_1d_merged.replace("merged", "HAB")
 output_workspace_1d_lab = output_workspace_1d_merged.replace("merged", "main")
 for output_workspace in [output_workspace_1d_merged, output_workspace_1d_hab, output_workspace_1d_lab]:
     SaveNXcanSAS(output_workspace, f"{output_path}/{output_workspace}.h5")
-    output.extend(f"{output_workspace}.h5")
+    output.append(f"{output_workspace}.h5")
     SaveRKH(output_workspace, f"{output_path}/{output_workspace}.dat")
-    output.extend(f"{output_workspace}.dat")
+    output.append(f"{output_workspace}.dat")
 
 # Setup ISIS Command Interface for 2D and reduce
 ici.Set2D()
@@ -81,17 +83,17 @@ output_workspace_2d_hab = output_workspace_2d_merged.replace("merged", "HAB")
 output_workspace_2d_lab = output_workspace_2d_merged.replace("merged", "main")
 for output_workspace in [output_workspace_2d_merged, output_workspace_2d_hab, output_workspace_2d_lab]:
     SaveNXcanSAS(output_workspace, f"{output_path}/{output_workspace}.h5")
-    output.extend(f"{output_workspace}.h5")
+    output.append(f"{output_workspace}.h5")
 
 # Now perform the overlap reduction
 ici.Set1D()
 output_workspaces_overlap_reductions_name_string = ""
 for i in range(len(wavs) - 1):
     output_workspaces_overlap_reductions_name_string += f", {ici.WavRangeReduction(wavs[i], wavs[i + 1], False, combineDet='merged')}"
-overlap_reduction_name = "overlap_reduction_group_workspaces"
+overlap_reduction_name = f"{scatter}_overlap_reduction_group_workspace"
 GroupWorkspaces(InputWorkspaces=output_workspaces_overlap_reductions_name_string, OutputWorkspace=overlap_reduction_name)
 SaveNexusProcessed(overlap_reduction_name, f"{output_path}/{overlap_reduction_name}.nxs")
-output.extend(overlap_reduction_name)
+output.append("{overlap_reduction_name}.nxs")
 
 
 def save_sector_reduction(output_workspace, sector):
