@@ -63,7 +63,7 @@ def cleanup_and_setup_ici():
     if can_scatter is not None:
         ici.AssignCan(str(can_scatter))
     if can_scatter is not None and can_transmission is not None and can_direct is not None:
-        ici.TransmissionCan(str(can_transmission, str(can_direct))
+        ici.TransmissionCan(str(can_transmission), str(can_direct))
 
 # Perform 1D reduction and output
 cleanup_and_setup_ici()
