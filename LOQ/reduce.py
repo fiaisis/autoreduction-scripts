@@ -51,22 +51,22 @@ wavs = grab_wavelength_limits_from_user_file()
 output = []
 
 # Setup ISIS Command Interface for 1D
-def cleanup_and_set_ici():
+def cleanup_and_setup_ici():
     ici.Clean()
     ici.UseCompatibilityMode()
     ici.LOQ()
     ici.Set1D()
     ici.MaskFile(user_file)
-    ici.AssignSample(sample_scatter)
+    ici.AssignSample(str(sample_scatter))
     if sample_transmission is not None and sample_direct is not None:
-        ici.TransmissionSample(sample_transmission, sample_direct)
+        ici.TransmissionSample(str(sample_transmission), str(sample_direct))
     if can_scatter is not None:
-        ici.AssignCan(can_scatter)
+        ici.AssignCan(str(can_scatter))
     if can_scatter is not None and can_transmission is not None and can_direct is not None:
-        ici.TransmissionCan(can_transmission, can_direct)
+        ici.TransmissionCan(str(can_transmission, str(can_direct))
 
 # Perform 1D reduction and output
-cleanup_and_set_ici()
+cleanup_and_setup_ici()
 output_workspace_1d_merged = ici.WavRangeReduction(None, None, ici.DefaultTrans, combineDet="merged")
 output_workspace_1d_hab = output_workspace_1d_merged.replace("merged", "HAB")
 output_workspace_1d_lab = output_workspace_1d_merged.replace("merged", "main")
@@ -110,7 +110,7 @@ def save_sector_reduction(output_workspace, sector):
 
 
 # Now perform the sector reduction
-cleanup_and_set_ici()
+cleanup_and_setup_ici()
 ici.SetPhiLimit(-30, 30, use_mirror=True)
 output_workspaces = ici.WavRangeReduction(None, None, ici.DefaultTrans, combineDet="merged")
 save_sector_reduction(output_workspaces, "_horizontal_sector")
