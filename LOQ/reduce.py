@@ -1,4 +1,4 @@
-import math
+from mantid.kernel import ConfigService
 import math
 
 import numpy
@@ -19,6 +19,7 @@ can_direct = "74014"
 # Save and reduction options
 output_path = f"/output/run-{sample_scatter}/"
 config['defaultsave.directory'] = output_path
+ConfigService.setDataSearchDirs("/archive/NDXLOQ/user/masks/")
 
 
 def grab_wavelength_limits_from_user_file():
