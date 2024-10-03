@@ -94,7 +94,7 @@ for i in range(len(wavs) - 1):
 overlap_reduction_name = f"{scatter}_overlap_reduction_group_workspace"
 GroupWorkspaces(InputWorkspaces=output_workspaces_overlap_reductions_name_string, OutputWorkspace=overlap_reduction_name)
 SaveNexusProcessed(overlap_reduction_name, f"{output_path}/{overlap_reduction_name}.nxs")
-output.append("{overlap_reduction_name}.nxs")
+output.append(f"{overlap_reduction_name}.nxs")
 
 
 def save_sector_reduction(output_workspace, sector):
