@@ -9,12 +9,12 @@ import sans.command_interface.ISISCommandInterface as ici
 
 # Setup by rundetection
 user_file = "/extras/loq/MaskFile.toml"
-sample_scatter = "74044"  # Will need the 00 added for new cycles
-sample_transmission = "74024"
-sample_direct = "74014"
-can_scatter = "74019"
-can_transmission = "74020"
-can_direct = "74014"
+sample_scatter = 110754 # Will need the 00 added for new cycles
+sample_transmission = None
+sample_direct = None
+can_scatter = None
+can_transmission = None
+can_direct = None
 
 # Save and reduction options
 output_path = f"/output/run-{sample_scatter}/"
