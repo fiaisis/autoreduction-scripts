@@ -22,7 +22,7 @@ sample_width = 8.0
 # Other configuration options
 output_path = f"/output/run-{sample_scatter}/"
 config['defaultsave.directory'] = output_path
-ConfigService.setDataSearchDirs("/archive/NDXLOQ/user/masks/")
+ConfigService.setDataSearchDirs("/archive/NDXLOQ/User/masks/")
 default_slice_wavs = [2.7, 3.7, 4.7, 5.7, 6.7, 8.7, 10.5]
 
 output = []
