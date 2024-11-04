@@ -76,8 +76,17 @@ def save_workspace(workspace):
 if spectroscopy_reduction:
     calibration_workspace = generate_spec_calibration_workspace()
     output_workspace_prefix = instrument
-    for input_run in input_runs:
-        output_workspace_prefix += str(input_run) + ","
+    if len(input_runs) > 6:
+        output_workspace_prefix += input_runs[0] + ","
+        output_workspace_prefix += input_runs[1] + ","
+        output_workspace_prefix += input_runs[2] + ","
+        output_workspace_prefix += "..."
+        output_workspace_prefix += input_runs[-3] + ","
+        output_workspace_prefix += input_runs[-2] + ","
+        output_workspace_prefix += input_runs[-1] + ","
+    else:
+        for input_run in input_runs:
+            output_workspace_prefix += str(input_run) + ","
     output_workspace_prefix = output_workspace_prefix[:-1] + f"_{analyser}_{reflection}_Reduced"  # Slice out the excess "," and finalize prefix
     
     output_spec_ws_individual = ISISIndirectEnergyTransferWrapper(OutputWorkspace=output_workspace_prefix + "-individual", GroupingMethod="Individual", InputFiles=input_file_paths, SumFiles=sum_runs, CalibrationWorkspace=calibration_workspace, Instrument=instrument, Analyser=analyser, Reflection=reflection, EFixed=efixed, SpectraRange=spec_spectra_range, FoldMultipleFrames=fold_multiple_frames, UnitX=unit_x)
