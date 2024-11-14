@@ -26,7 +26,7 @@ parameter_filename = instrument_definition_directory + instrument + "_" + analys
 parameter_file = LoadParameterFile(Filename=parameter_filename, Workspace="instrument_workspace")
 efixed = instrument_workspace.getInstrument().getComponentByName(analyser).getNumberParameter("Efixed")[0]
 spec_spectra_range = "3,53"
-diff_spectra_range = '3,962'
+diff_spectra_range = '105,112'
 unit_x = "DeltaE"
 fold_multiple_frames = False
 
@@ -110,3 +110,6 @@ output_spec_ws_all = ISISIndirectEnergyTransferWrapper(OutputWorkspace=output_wo
                                                        SpectraRange=spec_spectra_range,
                                                        FoldMultipleFrames=fold_multiple_frames, UnitX=unit_x)
 save_workspace(output_spec_ws_all)
+
+output_diffspec_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, Instrument=instrument, SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
+save_workspace(output_diffspec_ws)
