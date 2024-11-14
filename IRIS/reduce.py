@@ -111,5 +111,6 @@ output_spec_ws_all = ISISIndirectEnergyTransferWrapper(OutputWorkspace=output_wo
                                                        FoldMultipleFrames=fold_multiple_frames, UnitX=unit_x)
 save_workspace(output_spec_ws_all)
 
-output_diffspec_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, Instrument=instrument, SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
+output_diffspec_ws = ISISIndirectDiffractionReduction(InputFiles=input_file_paths, Instrument=instrument,
+                                                      SpectraRange=diff_spectra_range, OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
 save_workspace(output_diffspec_ws)
