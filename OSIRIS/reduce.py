@@ -123,4 +123,3 @@ if spectroscopy_reduction:
                                                           SpectraRange=diff_spectra_range,
                                                           OutputWorkspace=f"{instrument}{input_runs[0]}_diffspec_red")
     save_workspace(output_diffspec_ws)
---
