@@ -7,7 +7,7 @@ def generate_input_path_for_run(run_number, cycle):
 
 # To change by automatic script
 input_runs = [105277]
-calibration_run_number = "105277"
+calibration_run_numbers = [105313, 105315, 105317]
 cycle = "cycle_24_3"
 analyser = "graphite"
 reflection = "002"
@@ -47,7 +47,7 @@ def generate_spec_calibration_workspace():
     x = [-6 * resolution, -5 * resolution, -2 * resolution, 0, 2 * resolution]
     y = [1, 2, 3, 4]
     e = [0, 0, 0, 0]
-    energy_workspace = CreateWorkspace(DataX=x, DataY=y, DataE=e, NSpec=1, UnitX="DeltaE",
+    CreateWorkspace(DataX=x, DataY=y, DataE=e, NSpec=1, UnitX="DeltaE",
                                        OutputWorkspace="energy_workspace")
     energy_workspace = ConvertToHistogram(InputWorkspace="energy_workspace", OutputWorkspace="energy_workspace")
     LoadInstrument(Workspace="energy_workspace", InstrumentName=instrument, RewriteSpectraMap=True)
@@ -61,10 +61,14 @@ def generate_spec_calibration_workspace():
                                  EMode="Indirect", EFixed=efixed)
     tof_data = tof_workspace.readX(0)
 
-    calibration_input_files = instrument + calibration_run_number + ".nxs"
+    calibration_input_files = ""
+    for calibration_run_number in calibration_run_numbers:
+        calibration_input_files += instrument.upper() + str(calibration_run_number) + ".nxs" + ","
+    calibration_input_files = calibration_input_files[:-1]
     peak_range = f"{tof_data[0]},{tof_data[2]}"
     background_range = f"{tof_data[3]},{tof_data[4]}"
-    calibration_workspace_name = instrument.lower() + calibration_run_number + "_" + analyser + reflection + "_calib"
+    calibration_workspace_name = instrument.lower() + str(
+        calibration_run_numbers[0]) + "_" + analyser + reflection + "_calib"
     return IndirectCalibration(InputFiles=calibration_input_files, DetectorRange=spec_spectra_range,
                                PeakRange=peak_range, BackgroundRange=background_range, ScaleByFactor=0, ScaleFactor=1,
                                LoadLogFiles=0, OutputWorkspace=calibration_workspace_name)
