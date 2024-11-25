@@ -87,13 +87,13 @@ if spectroscopy_reduction:
     calibration_workspace = generate_spec_calibration_workspace()
     output_workspace_prefix = instrument
     if len(input_runs) > 6:
-        output_workspace_prefix += input_runs[0] + ","
-        output_workspace_prefix += input_runs[1] + ","
-        output_workspace_prefix += input_runs[2] + ","
+        output_workspace_prefix += str(input_runs[0]) + ","
+        output_workspace_prefix += str(input_runs[1]) + ","
+        output_workspace_prefix += str(input_runs[2]) + ","
         output_workspace_prefix += "..."
-        output_workspace_prefix += input_runs[-3] + ","
-        output_workspace_prefix += input_runs[-2] + ","
-        output_workspace_prefix += input_runs[-1] + ","
+        output_workspace_prefix += str(input_runs[-3]) + ","
+        output_workspace_prefix += str(input_runs[-2]) + ","
+        output_workspace_prefix += str(input_runs[-1]) + ","
     else:
         for input_run in input_runs:
             output_workspace_prefix += str(input_run) + ","
