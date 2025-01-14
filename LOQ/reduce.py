@@ -18,12 +18,13 @@ sample_thickness = 1.0
 sample_geometry = "Disc"
 sample_height = 8.0
 sample_width = 8.0
+slice_wavs = [2.7, 3.7, 4.7, 5.7, 6.7, 8.7, 10.5]
 
 # Other configuration options
 output_path = f"/output/run-{sample_scatter}/"
 config['defaultsave.directory'] = output_path
 ConfigService.setDataSearchDirs("/archive/NDXLOQ/User/masks/")
-default_slice_wavs = [2.7, 3.7, 4.7, 5.7, 6.7, 8.7, 10.5]
+
 
 output = []
 
@@ -122,7 +123,7 @@ save_sector_reduction(output_workspaces, "_vertical_sector")
 # Now perform the overlap reduction
 cleanup_and_setup_ici()
 ici.Set1D()
-for i in range(len(default_slice_wavs) - 1):
-  output_workspace = ici.WavRangeReduction(default_slice_wavs[i], default_slice_wavs[i + 1], False, combineDet='merged')
-  SaveNXcanSAS(**get_nxcansas_kwargs(output_workspace, ws_suffix=f"{default_slice_wavs[0]}_{default_slice_wavs[-1]}"))
+for i in range(len(slice_wavs) - 1):
+  output_workspace = ici.WavRangeReduction(slice_wavs[i], slice_wavs[i + 1], False, combineDet='merged')
+  SaveNXcanSAS(**get_nxcansas_kwargs(output_workspace, ws_suffix=f"{slice_wavs[0]}_{slice_wavs[-1]}"))
   output.append(f"{output_workspace}_auto.h5")
