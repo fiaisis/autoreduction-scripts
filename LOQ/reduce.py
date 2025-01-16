@@ -1,6 +1,9 @@
-from mantid.kernel import ConfigService
 import math
 import numpy
+import csv
+import datetime
+
+from mantid.kernel import ConfigService
 from mantid.simpleapi import RenameWorkspace, SaveRKH, SaveNXcanSAS, GroupWorkspaces, mtd
 from mantid import config
 from sans.user_file.toml_parsers.toml_reader import TomlReader
@@ -127,3 +130,19 @@ for i in range(len(slice_wavs) - 1):
   output_workspace = ici.WavRangeReduction(slice_wavs[i], slice_wavs[i + 1], False, combineDet='merged')
   SaveNXcanSAS(**get_nxcansas_kwargs(output_workspace, ws_suffix=f"{slice_wavs[0]}_{slice_wavs[-1]}"))
   output.append(f"{output_workspace}_auto.h5")
+
+# Create batch csv file for loading into mantid for manual equivalent reduction
+first_line = f"# MANTID_BATCH_FILE created on {datetime.datetime.now(tz=datetime.timezone.utc)} by FIA (Automated reduction)\n"
+with open("/output/batch.csv", "w") as csvfile:
+    csvfile.write(first_line)
+    writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    row = []
+    for item in ["sample_sans",sample_scatter,"sample_trans",sample_transmission,"sample_direct_beam",sample_direct,"can_sans",can_scatter,"can_trans",can_transmission,"can_direct_beam",can_direct,"output_as",f"run-{sample_scatter}"]:
+        if item is not None:
+            row.append(item)
+        else:
+            # Remove the already added string from before
+            row.pop()
+    writer.writerow(row)
+    for row_to_write_csv in rows_to_write_csv:
+        writer.writerow(row_to_write_csv)
