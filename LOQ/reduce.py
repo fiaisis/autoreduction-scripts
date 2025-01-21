@@ -126,10 +126,18 @@ save_sector_reduction(output_workspaces, "_vertical_sector")
 # Now perform the overlap reduction
 cleanup_and_setup_ici()
 ici.Set1D()
+# Create a multiple scattering workspaces to check for well, multiple scattering.
+ms_workspaces = []
 for i in range(len(slice_wavs) - 1):
   output_workspace = ici.WavRangeReduction(slice_wavs[i], slice_wavs[i + 1], False, combineDet='merged')
-  SaveNXcanSAS(**get_nxcansas_kwargs(output_workspace, ws_suffix=f"{slice_wavs[0]}_{slice_wavs[-1]}"))
-  output.append(f"{output_workspace}_auto.h5")
+  ms_workspaces.append(output_workspace)
+
+ms_ws = f"{sample_scatter}_merged_multiple_scattering"
+ConjoinWorkspaces(InputWorkspace1=ms_workspaces[0], InputWorkspace2=ms_workspaces[1], CheckOverlapping=False)
+RenameWorkspace(InputWorkspace=ms_workspaces[0], OutputWorkspace=ms_ws)
+for ws_index in range(len(ms_workspaces) - 1):
+    if ws_index not in [0, 1]:
+        ConjoinWorkspaces(InputWorkspace1=ms_ws, InputWorkspace2=ms_workspaces[ws_index], CheckOverlapping=False)
 
 # Create batch csv file for loading into mantid for manual equivalent reduction
 first_line = f"# MANTID_BATCH_FILE created on {datetime.datetime.now(tz=datetime.timezone.utc)} by FIA (Automated reduction)\n"
