@@ -27,7 +27,7 @@ phi_limits_list = [(-30, 30), (60, 120)]
 # Other configuration options
 output_path = f"/output/run-{sample_scatter}/"
 config['defaultsave.directory'] = output_path
-ConfigService.setDataSearchDirs("/archive/NDXSANS2D/user/Masks/")
+ConfigService.setDataSearchDirs("/archive/NDXSANS2D/user/masks/")
 
 output = []
 
