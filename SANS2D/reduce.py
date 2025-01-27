@@ -27,14 +27,6 @@ phi_limits_list = [(-30, 30), (60, 120)]
 # Other configuration options
 output_path = f"/output/run-{sample_scatter}/"
 config['defaultsave.directory'] = output_path
-import os
-print("Before masks check")
-if os.path.exists("/archive/NDXSANS2D/user/Masks/"):
-    print("/archive/NDXSANS2D/user/Masks/ exists")
-    print(os.listdir("/archive/NDXSANS2D/user/Masks/"))
-else:
-    print("/archive/NDXSANS2D/user/masks/ exists")
-    print(os.listdir("/archive/NDXSANS2D/user/masks/"))
 ConfigService.setDataSearchDirs("/archive/NDXSANS2D/User/Masks/")
 
 output = []
