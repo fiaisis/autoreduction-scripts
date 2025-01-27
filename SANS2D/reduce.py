@@ -35,7 +35,7 @@ if os.path.exists("/archive/NDXSANS2D/user/Masks/"):
 else:
     print("/archive/NDXSANS2D/user/masks/ exists")
     print(os.listdir("/archive/NDXSANS2D/user/masks/"))
-ConfigService.setDataSearchDirs("/archive/NDXSANS2D/user/Masks/;/archive/NDXSANS2D/user/masks/")
+ConfigService.setDataSearchDirs("/archive/NDXSANS2D/User/Masks/")
 
 output = []
 
