@@ -94,4 +94,4 @@ class VesuvioTransmission(PythonAlgorithm):
         DeleteWorkspace('tmp')
 
 
-# AlgorithmFactory.subscribe(VesuvioTransmission)
+AlgorithmFactory.subscribe(VesuvioTransmission)
