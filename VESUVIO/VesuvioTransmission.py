@@ -24,6 +24,7 @@ class VesuvioTransmission(PythonAlgorithm):
         self.declareProperty("CalculateXS",False)
         self.declareProperty("InvertMonitors",False)
         self.declareProperty("SmoothIncidentSpectrum",False)
+
     def PyExec(self):
         invert=self.getProperty("InvertMonitors").value
         smooth=self.getProperty("SmoothIncidentSpectrum").value
@@ -93,4 +94,4 @@ class VesuvioTransmission(PythonAlgorithm):
         DeleteWorkspace('tmp')
 
 
-AlgorithmFactory.subscribe(VesuvioTransmission)
+# AlgorithmFactory.subscribe(VesuvioTransmission)
