@@ -54,11 +54,12 @@ from VesuvioTransmission import VesuvioTransmission
 
 
 # Setup by rundetection
-ip="/extras/vesuvio/IP0005.par"
+ip = "IP0005.par"
 empty_runs = "50309-50341"
 runno = "52695"
 
 # Default constants
+filepath_ip = f"/extras/vesuvio/{ip}"
 rebin_vesuvio_run_parameters = "50,1,500"
 rebin_transmission_parameters="0.6,-0.05,1.e7"
 crop_min = 10
@@ -79,18 +80,18 @@ for index, value in enumerate(back_scattering_spectra_range):
 
 # Load Empty runs
 LoadVesuvio(Filename=empty_runs, SpectrumList=back_scattering_spectra, Mode="SingleDifference",
-            InstrumentParFile=ip, SumSpectra=True, OutputWorkspace="empty_back_sd")
+            InstrumentParFile=filepath_ip, SumSpectra=True, OutputWorkspace="empty_back_sd")
 LoadVesuvio(Filename=empty_runs, SpectrumList=back_scattering_spectra, Mode="DoubleDifference",
-            InstrumentParFile=ip, SumSpectra=True, OutputWorkspace="empty_back_dd")
-LoadVesuvio(Filename=empty_runs, SpectrumList=forward_scattering_spectra, Mode="FoilInOut", InstrumentParFile=ip,
+            InstrumentParFile=filepath_ip, SumSpectra=True, OutputWorkspace="empty_back_dd")
+LoadVesuvio(Filename=empty_runs, SpectrumList=forward_scattering_spectra, Mode="FoilInOut", InstrumentParFile=filepath_ip,
             SumSpectra=True, OutputWorkspace="empty_gamma")
 CropWorkspace(InputWorkspace="empty_gamma", XMin=crop_min, XMax=crop_max, OutputWorkspace="empty_gamma")
 
 # Setup run file for processing, then process the file.
-LoadVesuvio(Filename=runno, SpectrumList=forward_scattering_spectra, Mode="SingleDifference", InstrumentParFile=ip, SumSpectra=True, OutputWorkspace=runno+"_front")
-LoadVesuvio(Filename=runno, SpectrumList=back_scattering_spectra, Mode="SingleDifference", InstrumentParFile=ip, SumSpectra=True, OutputWorkspace=runno+"_back_sd")
+LoadVesuvio(Filename=runno, SpectrumList=forward_scattering_spectra, Mode="SingleDifference", InstrumentParFile=filepath_ip, SumSpectra=True, OutputWorkspace=runno+"_front")
+LoadVesuvio(Filename=runno, SpectrumList=back_scattering_spectra, Mode="SingleDifference", InstrumentParFile=filepath_ip, SumSpectra=True, OutputWorkspace=runno+"_back_sd")
 Minus(LHSWorkspace=runno+"_back_sd", RHSWorkspace="empty_back_sd", OutputWorkspace=runno+"_back_sd")
-LoadVesuvio(Filename=runno, SpectrumList=back_scattering_spectra, Mode="DoubleDifference", InstrumentParFile=ip, SumSpectra=True, OutputWorkspace=runno+"_back_dd")
+LoadVesuvio(Filename=runno, SpectrumList=back_scattering_spectra, Mode="DoubleDifference", InstrumentParFile=filepath_ip, SumSpectra=True, OutputWorkspace=runno+"_back_dd")
 Minus(LHSWorkspace=runno+"_back_dd", RHSWorkspace="empty_back_dd", OutputWorkspace=runno+"_back_dd")
 Rebin(InputWorkspace=runno+"_back_sd", OutputWorkspace=runno+"_back_sd", Params=rebin_vesuvio_run_parameters)
 Rebin(InputWorkspace=runno+"_back_dd", OutputWorkspace=runno+"_back_dd", Params=rebin_vesuvio_run_parameters)
@@ -133,7 +134,7 @@ SaveNexusProcessed(InpurWorkspace=f"{transmission_output}_XS", Filename=f"{trans
 output.append(f"{transmission_output}_XS.nxs")
 
 # Run LoadVesuvio for gamma
-LoadVesuvio(Filename=runno, SpectrumList="135-182", Mode="FoilInOut", InstrumentParFile=ip, SumSpectra=True, OutputWorkspace=runno+"_gamma")
+LoadVesuvio(Filename=runno, SpectrumList="135-182", Mode="FoilInOut", InstrumentParFile=filepath_ip, SumSpectra=True, OutputWorkspace=runno+"_gamma")
 CropWorkspace(InputWorkspace=runno+"_gamma", XMin=crop_min, XMax=crop_max, OutputWorkspace=runno+"_gamma")
 Minus(LHSWorkspace=runno + "_gamma", RHSWorkspace="empty_gamma", OutputWorkspace=runno+"_gamma")
 SaveNexusProcessed(InputWorkspace=f"{runno}_gamma", Filename=f"{runno}_gamma.nxs")
