@@ -111,7 +111,7 @@ ISISIndirectDiffractionReduction(InputFiles=runno,
                              Instrument="VESUVIO",
                              Mode="diffspec",
                              SpectraRange=back_scattering_spectra_range)
-diffraction_output = "vesuvio" + runno + "diffspec_red"
+diffraction_output = "vesuvio" + runno + "_diffspec_red"
 SaveNexusProcessed(InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs")
 output.append(f"{diffraction_output}.nxs")
 
