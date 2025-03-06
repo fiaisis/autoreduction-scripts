@@ -128,9 +128,9 @@ vesuvio_transmission_args = {
 }
 run_alg(VesuvioTransmission, vesuvio_transmission_args)
 transmission_output = runno + "_transmission"
-SaveNexusProcessed(InpurWorkspace=transmission_output, Filename=f"{transmission_output}.nxs")
+SaveNexusProcessed(InputWorkspace=transmission_output, Filename=f"{transmission_output}.nxs")
 output.append(f"{transmission_output}.nxs")
-SaveNexusProcessed(InpurWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output}_XS.nxs")
+SaveNexusProcessed(InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output}_XS.nxs")
 output.append(f"{transmission_output}_XS.nxs")
 
 # Run LoadVesuvio for gamma
