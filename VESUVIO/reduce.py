@@ -139,3 +139,8 @@ CropWorkspace(InputWorkspace=runno+"_gamma", XMin=crop_min, XMax=crop_max, Outpu
 Minus(LHSWorkspace=runno + "_gamma", RHSWorkspace="empty_gamma", OutputWorkspace=runno+"_gamma")
 SaveNexusProcessed(InputWorkspace=f"{runno}_gamma", Filename=f"{runno}_gamma.nxs")
 output.append(f"{runno}_gamma.nxs")
+
+EditInstrumentGeometry(Workspace=runno+"_gamma", L2='0.0001', Polar='0', InstrumentName='VESUVIO_RESONANCE')
+ConvertUnits(InputWorkspace=runno+"_gamma", OutputWorkspace=runno+"_gamma_E", Target='Energy')
+SaveNexusProcessed(InputWorkspace=f"{runno}_gamma_E", Filename=f"{runno}_gamma_E.nxs")
+output.append(f"{runno}_gamma_E.nxs")
