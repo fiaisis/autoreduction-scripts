@@ -3,7 +3,7 @@ import os
 
 from pathlib import Path
 
-from mantid.simpleapi import LoadVesuvio, CropWorkspace, Minus, Rebin, ISISIndirectDiffractionReduction, SaveNexusProcessed
+from mantid.simpleapi import LoadVesuvio, CropWorkspace, Minus, Rebin, ISISIndirectDiffractionReduction, SaveNexusProcessed, EditInstrumentGeometry
 from mantid import config
 
 # Define Utility functions
