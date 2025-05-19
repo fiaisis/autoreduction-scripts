@@ -1,8 +1,48 @@
 import sys
 import os
 import importlib
+import time
+
+import requests
 
 sys.path.append(os.path.dirname(__file__))
+
+
+def get_file_from_request(url: str, path: str) -> None:
+    """
+    write the file from the url to the given path, retrying at most 3 times
+    :param url: the url to get
+    :param path: the path to write to
+    :return: None
+    """
+    success = False
+    attempts = 0
+    wait_time_seconds = 15
+    while attempts < 3:
+        print(f"Attempting to get resource {url}", flush=True)
+        response = requests.get(url)
+        if not response.ok:
+            print(f"Failed to get resource from: {url}", flush=True)
+            print(f"Waiting {wait_time_seconds}...", flush=True)
+            time.sleep(wait_time_seconds)
+            attempts += 1
+            wait_time_seconds *= 3
+        else:
+            with open(path, "w+") as fle:
+                fle.write(response.text)
+            success = True
+            break
+
+    if not success:
+        raise RuntimeError(f"Reduction not possible with missing resource {url}")
+
+
+git_sha = "5a0b0a76caad4252465e9f889fbe18f82dd41d47"
+# Only needed for fixes with regards to reductions during MARI issues
+get_file_from_request(
+    f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/reduction_utils.py",
+    "reduction_utils.py",
+)
 
 import reduction_utils
 
