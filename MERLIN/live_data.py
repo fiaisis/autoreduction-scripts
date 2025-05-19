@@ -1,6 +1,7 @@
-import sys
+# BEGIN FIA BLOCK
+
 import os
-import importlib
+import sys
 import time
 
 import requests
@@ -44,33 +45,68 @@ get_file_from_request(
     "reduction_utils.py",
 )
 
+# END FIA BLOCK
+
+############ User defined parameters ##############
+############ User defined parameters ##############
+rotation_block_name = "Rot"
+rotation_bin_size = 5  # In degrees
+
+# For silicon data:
+# runno = 69266
+# wbvan = 69168
+# ei_list = 'auto'
+# lattice_pars = [5.43, 5.43, 5.43]  # In Angstrom
+# lattice_ang = [90, 90, 90]         # In degrees
+# uvector = '1, 0, 0'                # Reciprocal lattice vector parallel to incident beam direction when rotation=psi0
+# vvector = '0, 1, 0'                # Reciprocal lattice vector perpendicular to u in the horizontal plane
+# rotation_zero_angle = -2           # psi0 in Horace notation
+
+
+# For live data on 20250516 (MnO):
+runno = "mno_live_2"
+wbvan = 71617
+ei_list = 30  # Auto-ei currently doesn't work for live (streamed) data
+lattice_pars = [4.446, 4.446, 4.446]
+lattice_ang = [90, 90, 90]
+uvector = "1,1,0"
+vvector = "0,0,1"
+rotation_zero_angle = 132.5  # psi0 in Horace notation
+
+###################################################
+
+output_dir = "/output"  # Do not change
+
+import importlib
+
+sys.path.append(os.path.dirname(__file__))
+
 import reduction_utils
 
 importlib.reload(reduction_utils)
 import mantid
-from mantid.simpleapi import mtd, Load, MergeMD, BinMD, CompactMD, SaveMD
+from mantid.simpleapi import mtd, Load, MergeMD, BinMD, CompactMD, SaveMD, StartLiveData
 
 # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
-output_dir = "/output"
 mantid.config["defaultsave.directory"] = output_dir  # data_dir
 
-# Starts live data collection:
-# StartLiveData(Instrument='MERLIN_EVENT', Listener='ISISLiveEventDataListener', Address='NDXMERLIN:10000',
-#    PreserveEvents=True, AccumulationMethod='Add', OutputWorkspace='lives')
-# runno = 'lives'
-
-# This could also be a workspace name as a string (e.g. for live data)
-runno = "input"  # input loads the workspace  # Si data, use 69194 for quartz
-wbvan = 69168
-rotation_block_name = "Rot"
-rotation_zero_angle = -2  # psi0 in Horace notation
-rotation_bin_size = 5  # In degrees
-lattice_pars = [5.43, 5.43, 5.43]  # In Angstrom
-lattice_ang = [90, 90, 90]  # In degrees
-uvector = "1, 0, 0"  # Reciprocal lattice vector parallel to incident beam direction when rotation=psi0
-vvector = (
-    "0, 1, 0"  # Reciprocal lattice vector perpendicular to u in the horizontal plane
-)
+if runno == "lives" and "lives" not in mtd:
+    StartLiveData(
+        Instrument="MERLIN_EVENT",
+        Listener="ISISLiveEventDataListener",
+        Address="NDXMERLIN:10000",
+        PreserveEvents=True,
+        AccumulationMethod="Add",
+        AccumulationWorkspace="live",
+        OutputWorkspace="lives",
+        UpdateEvery=1,
+        PostProcessingScript="import contextlib, websocket, json, datetime\n"
+        "from mantid.simpleapi import AddTimeSeriesLog, CloneWorkspace\n"
+        "with contextlib.closing(websocket.create_connection('wss://ndaextweb4.nd.rl.ac.uk/pvws/pv')) as conn:\n"
+        "    conn.send(json.dumps({'type':'subscribe', 'pvs':['IN:MERLIN:CS:SB:Rot']}))\n"
+        "    AddTimeSeriesLog('live', 'Rot', datetime.datetime.now().isoformat(), json.loads(conn.recv())['value'], Type='double')\n"
+        "    lives = CloneWorkspace('live')",
+    )
 
 wsname = runno if isinstance(runno, str) else f"MER{runno}"
 if wsname not in mtd:
@@ -78,13 +114,17 @@ if wsname not in mtd:
 else:
     ws = mtd[wsname]
 
-eis = reduction_utils.autoei(ws)
+if ei_list == "auto" or (hasattr(ei_list, "__iter__") and ei_list[0] == "auto"):
+    ei_list = reduction_utils.autoei(ws)
+if not hasattr(ei_list, "__iter__"):
+    ei_list = [ei_list]
 
-for ei in eis:
+for ei in ei_list:
     output_ws = reduction_utils.iliad(
         runno=wsname,
         wbvan=wbvan,
         ei=ei,
+        FixEi=True,
         Erange=[-0.5, 0.01, 0.85],
         cs_block=rotation_block_name,
         cs_bin_size=rotation_bin_size,
@@ -100,7 +140,11 @@ for ei in eis:
         inst="merlin",
         powdermap="MERLIN_rings_251.xml",
     )
-    allws = [w for w in mtd.getObjectNames() if w.startswith(f"{wsname}_{ei:g}meV")]
+    allws = [
+        w
+        for w in mtd.getObjectNames()
+        if f"{wsname}_{ei:g}meV" in w and w.endswith("_ang_md")
+    ]
     wsout = MergeMD(",".join(allws), OutputWorkspace=f"MER{runno}_{ei:g}meV_1to1_md")
     mn = [wsout.getDimension(i).getMinimum() for i in range(4)]
     mx = [wsout.getDimension(i).getMaximum() for i in range(4)]
@@ -117,8 +161,6 @@ for ei in eis:
         Filename=os.path.join(output_dir, f"MER{runno}_{ei:g}meV_1to1_mdhisto.nxs"),
     )
     mtd.remove(wsbin.name())
-    mtd.remove(wsout.name())
-
-# We do not want to remove the workspace
-# for ws in allws:
-#     mtd.remove(ws)
+    # mtd.remove(wsout.name())
+    for ws in allws:
+        mtd.remove(ws)
