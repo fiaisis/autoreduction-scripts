@@ -11,7 +11,7 @@ import mantid
 from mantid.simpleapi import mtd, Load, MergeMD, BinMD, CompactMD, SaveMD
 
 # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
-output_dir = "/home/dl11170/scripts/livedata"
+output_dir = "/output"
 mantid.config["defaultsave.directory"] = output_dir  # data_dir
 
 # Starts live data collection:
