@@ -68,7 +68,7 @@ rotation_bin_size = 5  # In degrees
 
 
 # For live data on 20250516 (MnO):
-runno = "mno_live_2"
+runno = "lives"
 wbvan = 71617
 ei_list = 30  # Auto-ei currently doesn't work for live (streamed) data
 lattice_pars = [4.446, 4.446, 4.446]
