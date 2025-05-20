@@ -44,6 +44,10 @@ get_file_from_request(
     f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/reduction_utils.py",
     "reduction_utils.py",
 )
+get_file_from_request(
+    f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/DG_reduction.py",
+    "DG_reduction.py",
+)
 
 # END FIA BLOCK
 
@@ -108,7 +112,7 @@ if runno == "lives" and "lives" not in mtd:
         "    lives = CloneWorkspace('live')",
     )
 
-wsname = runno if isinstance(runno, str) else f"MER{runno}"
+wsname = runno
 if wsname not in mtd:
     ws = Load(wsname, OutputWorkspace=wsname)
 else:
