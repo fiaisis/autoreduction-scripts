@@ -98,7 +98,7 @@ if runno == "lives" and "lives" not in mtd:
     StartLiveData(
         Instrument="MERLIN_EVENT",
         Listener="ISISLiveEventDataListener",
-        Address="NDXMERLIN:10000",
+        Address="NDXMERLIN.isis.cclrc.ac.uk:10000",
         PreserveEvents=True,
         AccumulationMethod="Add",
         AccumulationWorkspace="live",
