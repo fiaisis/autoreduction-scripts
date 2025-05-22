@@ -48,6 +48,15 @@ get_file_from_request(
     f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/DG_reduction.py",
     "DG_reduction.py",
 )
+get_file_from_request(
+    f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/DG_whitevan.py",
+    "DG_whitevan.py",
+)
+get_file_from_request(
+    f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/DG_monovan.py",
+    "DG_monovan.py",
+)
+
 
 # END FIA BLOCK
 
