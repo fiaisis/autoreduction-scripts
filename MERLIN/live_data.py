@@ -104,12 +104,6 @@ if runno == "lives" and "lives" not in mtd:
         AccumulationWorkspace="live",
         OutputWorkspace="lives",
         UpdateEvery=1,
-        PostProcessingScript="import contextlib, websocket, json, datetime\n"
-        "from mantid.simpleapi import AddTimeSeriesLog, CloneWorkspace\n"
-        "with contextlib.closing(websocket.create_connection('wss://ndaextweb4.nd.rl.ac.uk/pvws/pv')) as conn:\n"
-        "    conn.send(json.dumps({'type':'subscribe', 'pvs':['IN:MERLIN:CS:SB:Rot']}))\n"
-        "    AddTimeSeriesLog('live', 'Rot', datetime.datetime.now().isoformat(), json.loads(conn.recv())['value'], Type='double')\n"
-        "    lives = CloneWorkspace('live')",
     )
 
 wsname = runno
