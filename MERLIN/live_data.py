@@ -144,7 +144,7 @@ for ei in ei_list:
             "psi0": rotation_zero_angle,
         },
         hard_mask_file="mask_25_1.xml",
-        inst="merlin",
+        inst="MERLIN",
         powdermap="MERLIN_rings_251.xml",
     )
     allws = [
