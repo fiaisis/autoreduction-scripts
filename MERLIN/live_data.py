@@ -56,6 +56,10 @@ get_file_from_request(
     f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/DG_monovan.py",
     "DG_monovan.py",
 )
+get_file_from_request(
+    "https://raw.githubusercontent.com/pace-neutrons/InstrumentFiles/addf56cf27043dbae5c67a1f26ad76ecf7800324/merlin/mask_24_5.xml",
+    "mask_24_5.xml",
+)
 
 
 # END FIA BLOCK
@@ -143,7 +147,7 @@ for ei in ei_list:
             "v": vvector,
             "psi0": rotation_zero_angle,
         },
-        hard_mask_file="mask_25_1.xml",
+        hard_mask_file="mask_45_5.xml",
         inst="MERLIN",
         powdermap="MERLIN_rings_251.xml",
     )
