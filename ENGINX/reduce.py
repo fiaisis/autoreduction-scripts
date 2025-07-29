@@ -13,7 +13,7 @@ group = GROUP["BOTH"]
 
 # Set values that don't change
 output_dir = f"/output/run-{focus_runs[0]}"
-calib_file = "/home/sam/miniforge/envs/mantid/scripts/Engineering/calib/ENGINX_full_instrument_calibration_193749.nxs"
+calib_file = "/opt/conda/envs/mantid/scripts/Engineering/calib/ENGINX_full_instrument_calibration_193749.nxs"
 
 output = []  # This is probably the nexus files in the focus dir or something
 enginx = EnginX(
