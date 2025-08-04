@@ -1,3 +1,5 @@
+from mantid.simpleapi import SaveNexusProcessed
+
 print("hello world")
 SaveNexusProcessed(
     InputWorkspace="live-ws",
