@@ -102,22 +102,18 @@ import reduction_utils
 
 importlib.reload(reduction_utils)
 import mantid
-from mantid.simpleapi import mtd, Load, MergeMD, BinMD, CompactMD, SaveMD, StartLiveData
+from mantid.simpleapi import mtd, Load, MergeMD, BinMD, CompactMD, SaveMD
 
 # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
 mantid.config["defaultsave.directory"] = output_dir  # data_dir
 
-if runno == "lives" and "lives" not in mtd:
-    StartLiveData(
-        Instrument="MERLIN_EVENT",
-        Listener="ISISLiveEventDataListener",
-        Address="NDXMERLIN.isis.cclrc.ac.uk:10000",
-        PreserveEvents=True,
-        AccumulationMethod="Add",
-        AccumulationWorkspace="live",
-        OutputWorkspace="lives",
-        UpdateEvery=1,
-    )
+
+# TODO when possible
+# AddTimeSeriesLog(
+#     "live-ws",
+#     "Rot",
+#     datetime.now().isoformat(),
+# )
 
 wsname = runno
 if wsname not in mtd:
