@@ -92,7 +92,7 @@ rotation_zero_angle = 132.5  # psi0 in Horace notation
 
 ###################################################
 
-output_dir = "/output"  # Do not change
+output_dir = "~/Downloads"  # Do not change
 
 import importlib
 
