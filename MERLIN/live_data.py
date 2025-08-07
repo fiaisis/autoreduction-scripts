@@ -3,6 +3,9 @@
 import os
 import sys
 import time
+from datetime import datetime
+from epics import caget
+
 
 import requests
 
@@ -102,18 +105,27 @@ import reduction_utils
 
 importlib.reload(reduction_utils)
 import mantid
-from mantid.simpleapi import mtd, Load, MergeMD, BinMD, CompactMD, SaveMD
+from mantid.simpleapi import (
+    mtd,
+    Load,
+    MergeMD,
+    BinMD,
+    CompactMD,
+    SaveMD,
+    AddTimeSeriesLog,
+)
 
 # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
 mantid.config["defaultsave.directory"] = output_dir  # data_dir
 
 
-# TODO when possible
-# AddTimeSeriesLog(
-#     "live-ws",
-#     "Rot",
-#     datetime.now().isoformat(),
-# )
+os.environ["EPICS_CA_MAX_ARRAY_BYTES"] = "20000"
+os.environ["EPICS_CA_ADDR_LIST"] = "130.246.39.152:5066"
+os.environ["EPICS_CA_AUTO_ADDR_LIST"] = "NO"
+
+AddTimeSeriesLog(
+    "lives", "Rot", datetime.now().isoformat(), caget("IN:MERLIN:CS:SB:Rot")
+)
 
 wsname = runno
 if wsname not in mtd:
