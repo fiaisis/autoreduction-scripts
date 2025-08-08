@@ -163,6 +163,8 @@ for ei in ei_list:
         powdermap="MERLIN_rings_251.xml",
     )
     allws = []
+    print(f"{ei:g}meV:")
+    print(mtd.getObjectNames())
     for w in mtd.getObjectNames():
         if f"{wsname}_{ei:g}meV" in w and w.endswith("_ang_md"):
             allws.append(w)
