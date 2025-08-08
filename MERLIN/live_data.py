@@ -155,7 +155,7 @@ for ei in ei_list:
             "v": vvector,
             "psi0": rotation_zero_angle,
         },
-        hard_mask_file="mask_45_5.xml",
+        hard_mask_file="mask_24_5.xml",
         inst="MERLIN",
         powdermap="MERLIN_rings_251.xml",
     )
