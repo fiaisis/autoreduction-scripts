@@ -2,7 +2,7 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
-import json
+import cv2
 from pathlib import Path
 from typing import Any
 
@@ -19,12 +19,13 @@ from mantidimaging.core.reconstruct import get_reconstructor_for
 from mantidimaging.core.rotation import CorTiltDataModel
 from mantidimaging.core.utility.data_containers import ReconstructionParameters, ScalarCoR, Degrees, FILE_TYPES
 from mantidimaging.core.io.saver import image_save
+from mantidimaging.core.rotation.polyfit_correlation import find_center
 
 PROCESS_FILE = Path("process.json")
-OUT_DIR = Path("/output")
+OUT_DIR = Path("/home/ubuntu/output")
 FILTERS = {f.__name__: f for f in load_filter_packages()}
 RECON_DEFAULT_SETTINGS = {'algorithm': 'FBP_CUDA', 'filter_name': 'ram-lak', 'cor': 1, 'tilt': 0, 'max_projection_angle': 360}
-DATASET_PATH = Path("/home/sam/mi_dataset/large")
+DATASET_PATH = Path("/home/ubuntu/large")
 
 def version() -> str:
     return __version__
@@ -68,6 +69,8 @@ def run_operation(dataset: Dataset, op_name: str, params: dict[str, Any]):
     op_func = op_class.filter_func
     apply_to_dataset = True
 
+    print(f"Running operation: {op_name} with params: {params}")
+
     match op_name:
         case 'FlatFieldFilter':
             params = setup_flat_field(dataset, params)
@@ -75,7 +78,7 @@ def run_operation(dataset: Dataset, op_name: str, params: dict[str, Any]):
 
     op_func(dataset.sample, **params)
     if apply_to_dataset:
-        for stack in [dataset.flat_before, dataset.flat_after, dataset.dark_before, dataset.dark_after]:
+        for stack in [dataset.flat_before, dataset.flat_after, dataset.dark_before, dataset.dark_after, dataset.proj180deg]:
             if stack:
                 op_func(stack, **params)
 
@@ -97,6 +100,8 @@ def run_recon(image_stack, settings=None):
     if settings is None:
         settings = {}
     settings = RECON_DEFAULT_SETTINGS | settings
+
+    print(f"Running reconstruction with settings: {settings}")
 
     do_clip = settings.pop('clip', False)
 
@@ -124,22 +129,57 @@ def save_stack(image_stack: ImageStack, out_dir: Path):
     image_save(image_stack, out_dir, overwrite_all=True)
 
 
-def show_stack(image_stack: ImageStack):
-    from pyqtgraph.Qt import QtWidgets
-    import pyqtgraph as pg
-    pg.setConfigOptions(imageAxisOrder="row-major")
-    pg.mkQApp("image stack")
-    win = QtWidgets.QMainWindow()
-    iv = pg.image(image_stack.data)
-    win.setCentralWidget(iv)
-    win.show()
-    pg.exec()
+def get_contour_orientation(image) -> bool:
+    """Returns True if object appears vertical, False if horizontal"""
+    # Convert to uint8 and normalize to 0-255 range
+    img_normalized = ((image - image.min()) * (255 / (image.max() - image.min()))).astype(np.uint8)
+    
+    # Invert the image since we're looking for dark objects on light background
+    img_normalized = cv2.bitwise_not(img_normalized)
+    
+    # Apply threshold to create binary image
+    _, binary = cv2.threshold(img_normalized, 127, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    
+    # Try to find contours
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        return True  # Default to vertical if no contours found
+        
+    # Get the largest contour
+    largest_contour = max(contours, key=cv2.contourArea)
+    
+    # Fit an oriented bounding box
+    rect = cv2.minAreaRect(largest_contour)
+    width = rect[1][0]
+    height = rect[1][1]
+    
+    # For vertical objects, width will be less than height
+    is_vertical = width < height
+    
+    # Draw the oriented bounding box for visualization
+    box = cv2.boxPoints(rect)
+    box = np.int0(box)
+    
+    # Create RGB visualization
+    viz_img = cv2.cvtColor(img_normalized, cv2.COLOR_GRAY2RGB)
+    cv2.drawContours(viz_img, [box], 0, (0, 255, 0), 2)  # Green box
+    
+    # Add text showing orientation
+    text = "VERTICAL" if is_vertical else "HORIZONTAL"
+    cv2.putText(viz_img, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+    
+    # Add dimensions for debugging
+    dim_text = f"W: {width:.1f}, H: {height:.1f}"
+    cv2.putText(viz_img, dim_text, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+    
+    # Save visualization
+    cv2.imwrite("/home/ubuntu/orientation_detection.png", viz_img)
+    
+    return is_vertical
 
 
 def find_border_of_object(dataset: Dataset) -> list[int]:
-    import cv2
-    from mantidimaging.core.data import ImageStack
-
     def get_largest_contour_bbox(image) -> tuple[int, int, int, int] | None:
         # Convert to uint8 and normalize to 0-255 range
         img_normalized = ((image - image.min()) * (255 / (image.max() - image.min()))).astype(np.uint8)
@@ -171,21 +211,6 @@ def find_border_of_object(dataset: Dataset) -> list[int]:
         
         return x, y, x + w, y + h
 
-    def show_image_with_bbox(image, bbox, title):
-        # Create a normalized RGB image for visualization
-        img_normalized = ((image - image.min()) * (255 / (image.max() - image.min()))).astype(np.uint8)
-        img_rgb = cv2.cvtColor(img_normalized, cv2.COLOR_GRAY2RGB)
-        
-        if bbox is not None:
-            x1, y1, x2, y2 = bbox
-            # Draw rectangle in red
-            cv2.rectangle(img_rgb, (x1, y1), (x2, y2), (255, 0, 0), 2)
-        
-        # Create an ImageStack for visualization
-        vis_stack = ImageStack(img_rgb)
-        vis_stack.name = title
-        show_stack(vis_stack)
-
     # Get images at different positions in the stack
     num_images = len(dataset.sample.data)
     indices = [
@@ -212,10 +237,6 @@ def find_border_of_object(dataset: Dataset) -> list[int]:
             min_y = min(min_y, y1)
             max_x = max(max_x, x2)
             max_y = max(max_y, y2)
-            
-            # Show the image with its bounding box
-            # position_names = ["First", "One-Third", "Two-Thirds", "Last"]
-            # show_image_with_bbox(dataset.sample.data[idx], bbox, f"{position_names[i]} Image with Detected Object")
     
     final_bbox = None
     if found_any_contours:
@@ -223,16 +244,12 @@ def find_border_of_object(dataset: Dataset) -> list[int]:
     else:
         final_bbox = [0, 0, width - 1, height - 1]
     
-    # Show the first image with the final bounding box
-    # show_image_with_bbox(dataset.sample.data[0], final_bbox, "First Image with Final Bounding Box")
-    
     return final_bbox
 
 
 print(f"Mantid Imaging {version()}")
 
 dataset = load_dataset(DATASET_PATH)
-show_dataset(dataset)
 
 # ROI norm
 roi_settings = {
@@ -248,8 +265,19 @@ flat_field_settings = {
 }
 run_operation(dataset, "FlatFieldFilter", flat_field_settings)
 
+# Check if rotation is needed and rotate if object is horizontal
+# Check orientation in first image of stack
+is_vertical = get_contour_orientation(dataset.sample.data[0])
+if not is_vertical:
+    print("Object appears horizontal, rotating 90 degrees clockwise")
+    rotation_settings = {
+        "angle": 270,
+    }
+    run_operation(dataset, "RotateFilter", rotation_settings)
+else:
+    print("Object appears vertical, no rotation needed")
+
 # Crop (ML detect)
-# TODO
 border = find_border_of_object(dataset)
 crop_settings = {
     "region_of_interest": border
@@ -264,16 +292,25 @@ outlier_filter_settings = {
 }
 run_operation(dataset, "OutliersFilter", outlier_filter_settings)
 
-# To rotate or not rotate
-# TODO
+# TODO: Setup a debug mode that saves out images at the end of each step with appropriate names
 
 # Reconstruction
+if dataset.proj180deg is not None:
+    print("Calculating center of rotation and tilt using 180 degree projection")
+    cor, tilt = find_center(dataset.sample, None)
+    cor = cor.value
+    tilt = tilt.value
+else:
+    print("Using default center of rotation and tilt, as no 180 degree projection present")
+    cor = int(dataset.sample.width / 2)
+    tilt = 0.0
+
 recon_settings = {
     "algorithm": "FBP_CUDA",
     "filter_name": "ram-lak",
     "num_iter": 1,
-    "cor": 64.0,
-    "tilt": 0.0,
+    "cor": cor,
+    "tilt": tilt,
     "pixel_size": 0.0,
     "alpha": 1.0,
     "gamma": 1,
@@ -285,6 +322,4 @@ recon_settings = {
 recon = run_recon(dataset.sample, recon_settings)
 dataset.add_recon(recon)
 
-
-show_stack(dataset.recons.stacks[0])
-# save_stack(dataset.recons[0], OUT_DIR)
+save_stack(dataset.recons[0], OUT_DIR)
