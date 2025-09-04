@@ -22,7 +22,7 @@ enginx = EnginX(
     save_dir=output_dir,
     full_inst_calib_path=calib_file,
     ceria_run=ceria_run,
-    group=GROUP.BOTH,
+    group=group,
 )
 enginx.main(plot_cal=False, plot_foc=False)
 
