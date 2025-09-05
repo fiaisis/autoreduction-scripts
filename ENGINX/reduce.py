@@ -8,7 +8,9 @@ from Engineering.EnggUtils import GROUP
 # Values changed by rundetection
 vanadium_run = "ENGINX236516"
 focus_runs = ["ENGINX299080"]
+ceria_cycle = "cycle_1_2"
 ceria_run = "ENGINX193749"
+ceria_path = f"/archive/ndxenginx/Instrument/data/{ceria_cycle}/{ceria_run}.nxs"
 group = GROUP["BOTH"]
 
 # Set values that don't change
@@ -21,7 +23,7 @@ enginx = EnginX(
     focus_runs=focus_runs,
     save_dir=output_dir,
     full_inst_calib_path=calib_file,
-    ceria_run=ceria_run,
+    ceria_run=ceria_path,
     group=group,
 )
 enginx.main(plot_cal=False, plot_foc=False)
