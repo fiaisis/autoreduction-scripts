@@ -25,8 +25,8 @@ calib_file = "/opt/conda/envs/mantid/scripts/Engineering/calib/ENGINX_full_instr
 
 output = []
 enginx = EnginX(
-    vanadium_run=vanadium_run,
-    focus_runs=focus_runs,
+    vanadium_run=vanadium_path,
+    focus_runs=[focus_path],
     save_dir=output_dir,
     full_inst_calib_path=calib_file,
     ceria_run=ceria_path,
