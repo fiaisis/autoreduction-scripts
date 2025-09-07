@@ -6,15 +6,15 @@ from Engineering.EnggUtils import GROUP
 
 
 # Values changed by rundetection
-vanadium_run = "ENGINX236516"
-vanadium_cycle = "cycle_1_2"
+# vanadium_run = "ENGINX236516"
+# vanadium_cycle = "cycle_1_2"
 vanadium_path = "some path"
-focus_runs = ["ENGINX299080"]
-focus_cycle = "cycle_1_2"
-focus_path = f"/archive/ndxenginx/Instrument/data/{focus_cycle}/{focus_runs[0]}.nxs"
-ceria_cycle = "cycle_1_2"
-ceria_run = "ENGINX193749"
-ceria_path = f"/archive/ndxenginx/Instrument/data/{ceria_cycle}/{ceria_run}.nxs"
+# focus_runs = ["ENGINX299080"]
+# focus_cycle = "cycle_1_2"
+focus_path = "some path"
+# ceria_cycle = "cycle_1_2"
+# ceria_run = "ENGINX193749"
+ceria_path = "some path"
 group = GROUP["BOTH"]
 
 # Set values that don't change
