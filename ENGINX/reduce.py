@@ -8,9 +8,7 @@ from Engineering.EnggUtils import GROUP
 # Values changed by rundetection
 vanadium_run = "ENGINX236516"
 vanadium_cycle = "cycle_1_2"
-vanadium_path = (
-    f"/archive/ndxenginx/Instrument/data/{vanadium_cycle}/{vanadium_run}.nxs"
-)
+vanadium_path = "some path"
 focus_runs = ["ENGINX299080"]
 focus_cycle = "cycle_1_2"
 focus_path = f"/archive/ndxenginx/Instrument/data/{focus_cycle}/{focus_runs[0]}.nxs"
