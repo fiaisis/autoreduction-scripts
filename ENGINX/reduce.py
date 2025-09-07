@@ -18,7 +18,8 @@ ceria_path = "some path"
 group = GROUP["BOTH"]
 
 # Set values that don't change
-output_dir = f"/output/run-{focus_runs[0]}"
+folder = focus_path.split("/")[-1].split(".")[0]
+output_dir = f"/output/run-{folder}"
 calib_file = "/opt/conda/envs/mantid/scripts/Engineering/calib/ENGINX_full_instrument_calibration_193749.nxs"
 
 output = []
