@@ -35,4 +35,4 @@ enginx.main(plot_cal=False, plot_foc=False)
 
 for path in Path(output_dir).rglob("*"):
     if path.is_file():
-        output.append(str(path))
+        output.append(str(path.name))
