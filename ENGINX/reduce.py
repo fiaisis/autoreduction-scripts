@@ -6,14 +6,8 @@ from Engineering.EnggUtils import GROUP
 
 
 # Values changed by rundetection
-# vanadium_run = "ENGINX236516"
-# vanadium_cycle = "cycle_1_2"
 vanadium_path = "some path"
-# focus_runs = ["ENGINX299080"]
-# focus_cycle = "cycle_1_2"
 focus_path = "some path"
-# ceria_cycle = "cycle_1_2"
-# ceria_run = "ENGINX193749"
 ceria_path = "some path"
 group = GROUP["BOTH"]
 
@@ -21,7 +15,6 @@ group = GROUP["BOTH"]
 folder = focus_path.split("/")[-1].split(".")[0]
 output_dir = f"/output/run-{folder}"
 calib_file = "/opt/conda/envs/mantid/scripts/Engineering/calib/ENGINX_full_instrument_calibration_193749.nxs"
-
 output = []
 enginx = EnginX(
     vanadium_run=vanadium_path,
