@@ -11,6 +11,8 @@ focus_path = "some path"
 ceria_path = "some path"
 group = GROUP["BOTH"]
 
+print(f"Starting run with focus {focus_path}, vanadium {vanadium_path}, and ceria {ceria_path}.")
+
 # Set values that don't change
 folder = focus_path.split("/")[-1].split(".")[0]
 output_dir = f"/output/run-{folder}"
