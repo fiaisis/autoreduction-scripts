@@ -74,7 +74,8 @@ file_name = (
     requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}").text
     + f"/VESUVIO{runno}.nxs"
 )
-print(file_name)
+
+print(f"found filepath: {file_name}")
 
 # Default constants
 filepath_ip = f"/extras/vesuvio/{ip}"
