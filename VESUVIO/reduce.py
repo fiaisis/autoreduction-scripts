@@ -71,7 +71,9 @@ ip = "IP0005.par"
 empty_runs = "50309-50341"
 runno = "52695"
 file_name = (
-    requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}").text
+    requests.get(
+        f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}"
+    ).text.strip()
     + f"/VESUVIO{runno}.nxs"
 )
 
