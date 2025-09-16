@@ -73,7 +73,7 @@ runno = "52695"
 file_name = (
     requests.get(
         f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}"
-    ).text.strip()
+    ).text.strip("\n")
     + f"/VESUVIO{runno}.nxs"
 )
 
