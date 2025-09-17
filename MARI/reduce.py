@@ -34,7 +34,7 @@ def get_file_from_request(url: str, path: str) -> None:
     if not success:
         raise RuntimeError(f"Reduction not possible with missing resource {url}")
 
-git_sha = "5a0b0a76caad4252465e9f889fbe18f82dd41d47"
+git_sha = "03b3fdf2dd7461716f5146696c28f7e62e2d6abd"
 # Only needed for fixes with regards to reductions during MARI issues 
 get_file_from_request(f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/reduction_utils.py", "reduction_utils.py")
 get_file_from_request(f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/DG_whitevan.py", "DG_whitevan.py")
@@ -113,7 +113,7 @@ if isinstance(runno, list):
 else:
     runno = find_file_in_archive(runno)
 
-print(f"found filepath: {file_name}")
+print(f"found filepath: {runno}")
 
 # This is the main reduction call made in the script
 output_ws = iliad_mari(runno=runno, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
