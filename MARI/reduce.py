@@ -35,7 +35,6 @@ def get_file_from_request(url: str, path: str) -> None:
         raise RuntimeError(f"Reduction not possible with missing resource {url}")
 
 git_sha = "5a0b0a76caad4252465e9f889fbe18f82dd41d47"
-git_sha = str(git_sha).strip("\"")
 # Only needed for fixes with regards to reductions during MARI issues 
 get_file_from_request(f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/reduction_utils.py", "reduction_utils.py")
 get_file_from_request(f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/DG_whitevan.py", "DG_whitevan.py")
@@ -103,16 +102,21 @@ sam_rmm = 0
 # Set to true to remove the constant ToF background from the data.
 remove_bkg = True
 
-# This is the main reduction call made in the script
-file_name = (
-    requests.get(
-        f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}"
-    ).text.strip("\n")
-    + f"/MARI{runno}.nxs"
-)
+# Find all the files in the archive
+def find_file_in_archive(runno):
+    return requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}").text.strip("\n") + f"/MARI{runno}.nxs"
+if isinstance(runno, list):
+    new_runnos = []
+    for ii in runno:
+        new_runnos.append(find_file_in_archive(ii))
+    runno = new_runnos
+else:
+    runno = find_file_in_archive(runno)
+
 print(f"found filepath: {file_name}")
 
-output_ws = iliad_mari(runno=file_name, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
+# This is the main reduction call made in the script
+output_ws = iliad_mari(runno=runno, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
                        sub_ana=sub_ana, hard_mask_file='mask_file.xml')
 
 # To run reduction _and_ compute density of states together uncomment this and comment iliad_mari above
