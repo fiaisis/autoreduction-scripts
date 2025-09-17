@@ -104,7 +104,7 @@ remove_bkg = True
 
 # Find all the files in the archive
 def find_file_in_archive(runno):
-    return requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}").text.strip("\n") + f"/MARI{runno}.nxs"
+    return requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}").text.strip("\n") + f"/MAR{runno}.nxs"
 if isinstance(runno, list):
     new_runnos = []
     for ii in runno:
