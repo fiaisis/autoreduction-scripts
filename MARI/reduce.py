@@ -104,7 +104,15 @@ sam_rmm = 0
 remove_bkg = True
 
 # This is the main reduction call made in the script
-output_ws = iliad_mari(runno=runno, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
+file_name = (
+    requests.get(
+        f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}"
+    ).text.strip("\n")
+    + f"/MARI{runno}.nxs"
+)
+print(f"found filepath: {file_name}")
+
+output_ws = iliad_mari(runno=file_name, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
                        sub_ana=sub_ana, hard_mask_file='mask_file.xml')
 
 # To run reduction _and_ compute density of states together uncomment this and comment iliad_mari above
