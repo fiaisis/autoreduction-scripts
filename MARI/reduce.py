@@ -102,18 +102,8 @@ sam_rmm = 0
 # Set to true to remove the constant ToF background from the data.
 remove_bkg = True
 
-# Find all the files in the archive
-def find_file_in_archive(runno):
-    return requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}").text.strip("\n") + f"/MARI{runno}.nxs"
-if isinstance(runno, list):
-    new_runnos = []
-    for ii in runno:
-        new_runnos.append(find_file_in_archive(ii))
-    runno = new_runnos
-else:
-    runno = find_file_in_archive(runno)
-
-print(f"found filepath: {runno}")
+# Adds archive path to Mantid search list
+config.appendDataSearchDir(requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}").text.strip("\n"))
 
 # This is the main reduction call made in the script
 output_ws = iliad_mari(runno=runno, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
