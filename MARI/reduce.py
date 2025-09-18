@@ -103,7 +103,10 @@ sam_rmm = 0
 remove_bkg = True
 
 # Adds archive path to Mantid search list
-config.appendDataSearchDir(requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}").text.strip("\n"))
+if isinstance(runno, list) and len(runno) > 0:
+    config.appendDataSearchDir(requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno[0]}").text.strip("\n"))
+else:
+    config.appendDataSearchDir(requests.get(f"http://data.isis.rl.ac.uk/where.py/unixdir?name=MARI{runno}").text.strip("\n"))
 
 # This is the main reduction call made in the script
 output_ws = iliad_mari(runno=runno, ei=ei, wbvan=wbvan, monovan=monovan, sam_mass=sam_mass, sum_runs=sum_runs,
