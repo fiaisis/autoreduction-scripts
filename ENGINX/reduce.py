@@ -15,7 +15,7 @@ print(f"Starting run with focus {focus_path}, vanadium {vanadium_path}, and ceri
 
 # Set values that don't change
 folder = focus_path.split("/")[-1].split(".")[0]
-output_dir = f"/output/run-{folder}"
+output_dir = f"/output"
 calib_file = "/opt/conda/envs/mantid/scripts/Engineering/calib/ENGINX_full_instrument_calibration_193749.nxs"
 output = []
 enginx = EnginX(
