@@ -162,7 +162,10 @@ def execute():
         for w in mtd.getObjectNames():
             if f"{wsname}_{ei:g}meV" in w and w.endswith("_ang_md"):
                 allws.append(w)
-        wsout = MergeMD(",".join(allws), OutputWorkspace=f"MER{runno}_{ei:g}meV_1to1_md")
+        if len(allws) > 1:
+            wsout = MergeMD(",".join(allws), OutputWorkspace=f"MER{runno}_{ei:g}meV_1to1_md")
+        else:
+            wsout = allws[0]
         mn = [wsout.getDimension(i).getMinimum() for i in range(4)]
         mx = [wsout.getDimension(i).getMaximum() for i in range(4)]
         wsbin = BinMD(
