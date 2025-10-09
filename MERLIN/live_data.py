@@ -41,7 +41,8 @@ def execute():
             raise RuntimeError(f"Reduction not possible with missing resource {url}")
     
     
-    git_sha = "5a0b0a76caad4252465e9f889fbe18f82dd41d47"
+    git_sha = "1408532f20bd9113e91a107bebdef7a45c5fd903"
+    print(f"mantidproject/direct_reduction sha is {git_sha}")
     # Only needed for fixes with regards to reductions during MARI issues
     get_file_from_request(
         f"https://raw.githubusercontent.com/mantidproject/direct_reduction/{git_sha}/reduction_files/reduction_utils.py",
