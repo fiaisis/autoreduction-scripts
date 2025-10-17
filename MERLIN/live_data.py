@@ -12,6 +12,7 @@ import requests
 sys.path.append(os.path.dirname(__file__))
     
 def execute():    
+
     def get_file_from_request(url: str, path: str) -> None:
         """
         write the file from the url to the given path, retrying at most 3 times
@@ -114,8 +115,9 @@ def execute():
         CompactMD,
         SaveMD,
         AddTimeSeriesLog,
+        SaveNexusProcessed,
     )
-    
+    SaveNexusProcessed(Filename="~/work/live-data/output-lives.nxs", InputWorkspace="lives")
     # Default save directory (/output only for autoreduction as the RBNumber/autoreduced dir is mounted here)
     mantid.config["defaultsave.directory"] = output_dir  # data_dir
     
