@@ -38,6 +38,7 @@ def get_file_from_request(url: str, path: str) -> None:
             with open(path, "w+") as fle:
                 fle.write(response.text)
             success = True
+            print("Successfully obtained resource")
             break
 
     if not success:
@@ -77,7 +78,7 @@ file_name = (
     + f"/VESUVIO000{runno}.raw"
 )
 
-print(f"found filepath: {file_name}")
+print(f"Starting with file: {file_name}")
 
 # Default constants
 filepath_ip = f"/extras/vesuvio/{ip}"
