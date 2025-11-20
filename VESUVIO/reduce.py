@@ -75,7 +75,7 @@ file_name = (
     requests.get(
         f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}"
     ).text.strip("\n")
-    + f"/VESUVIO000{runno}"
+    + f"/VESUVIO000{runno}.nxs"
 )
 
 print(f"Starting with file: {file_name}")
