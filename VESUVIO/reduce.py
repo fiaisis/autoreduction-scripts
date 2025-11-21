@@ -75,7 +75,7 @@ file_name = (
     requests.get(
         f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}"
     ).text.strip("\n")
-    + f"/VESUVIO000{runno}.nxs"
+    + f"/VESUVIO000{runno}.raw"
 )
 
 print(f"Starting with file: {file_name}")
@@ -162,6 +162,7 @@ LoadVesuvio(
     SumSpectra=True,
     OutputWorkspace=runno + "_back_dd",
 )
+RebinToWorkspace("empty_back_dd", runno + "_back_dd", OutputWorkspace="empty_back_dd")
 Minus(
     LHSWorkspace=runno + "_back_dd",
     RHSWorkspace="empty_back_dd",
@@ -242,6 +243,7 @@ CropWorkspace(
     XMax=crop_max,
     OutputWorkspace=runno + "_gamma",
 )
+RebinToWorkspace("empty_gamma", runno + "_gamma", OutputWorkspace="empty_gamma")
 Minus(
     LHSWorkspace=runno + "_gamma",
     RHSWorkspace="empty_gamma",
