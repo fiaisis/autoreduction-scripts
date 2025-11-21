@@ -150,6 +150,8 @@ LoadVesuvio(
     SumSpectra=True,
     OutputWorkspace=runno + "_back_sd",
 )
+ConvertToHistogram("empty_back_sd", OutputWorkspace="empty_back_sd")
+ConvertToHistogram(runno+"_back_sd",  OutputWorkspace=runno+"_back_sd")
 RebinToWorkspace("empty_back_sd", runno + "_back_sd", OutputWorkspace="empty_back_sd")
 Minus(
     LHSWorkspace=runno + "_back_sd",
@@ -164,6 +166,8 @@ LoadVesuvio(
     SumSpectra=True,
     OutputWorkspace=runno + "_back_dd",
 )
+ConvertToHistogram("empty_back_dd", OutputWorkspace="empty_back_dd")
+ConvertToHistogram(runno+"_back_dd",  OutputWorkspace=runno+"_back_dd")
 RebinToWorkspace("empty_back_dd", runno + "_back_dd", OutputWorkspace="empty_back_dd")
 Minus(
     LHSWorkspace=runno + "_back_dd",
@@ -245,6 +249,8 @@ CropWorkspace(
     XMax=crop_max,
     OutputWorkspace=runno + "_gamma",
 )
+ConvertToHistogram("empty_gamma", OutputWorkspace="empty_gamma")
+ConvertToHistogram(runno+"_gamma",  OutputWorkspace=runno+"_gamma")
 RebinToWorkspace("empty_gamma", runno + "_gamma", OutputWorkspace="empty_gamma")
 Minus(
     LHSWorkspace=runno + "_gamma",
