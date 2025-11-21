@@ -149,6 +149,7 @@ LoadVesuvio(
     SumSpectra=True,
     OutputWorkspace=runno + "_back_sd",
 )
+RebinToWorkspace("empty_back_sd", runno + "_back_sd", OutputWorkspace="empty_back_sd")
 Minus(
     LHSWorkspace=runno + "_back_sd",
     RHSWorkspace="empty_back_sd",
