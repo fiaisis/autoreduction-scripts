@@ -6,6 +6,7 @@ from mantid.simpleapi import (
     CropWorkspace,
     Minus,
     Rebin,
+    RebinToWorkspace,
     ISISIndirectDiffractionReduction,
     SaveNexusProcessed,
     EditInstrumentGeometry,
