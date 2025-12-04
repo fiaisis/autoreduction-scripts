@@ -27,9 +27,13 @@ DEBUG_DIR = Path("/output/debug")
 
 
 # To be edited by us for the script
+runno = 112345
 dataset_path = Path("/home/ubuntu/large")
-output_dir = Path("/output")
 
+# Set the output dir
+output_dir = Path(f"/output/run-{runno}")
+if not output_dir.exists():
+    output_dir.mkdir()
 
 def version() -> str:
     return __version__
