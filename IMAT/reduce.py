@@ -406,3 +406,5 @@ recon = run_recon(dataset.sample, recon_settings)
 dataset.add_recon(recon)
 
 save_stack(dataset.recons[0], output_dir)
+
+outputs = [f for f in listdir(output_dir) if isfile(join(output_dir, f))]
