@@ -11,6 +11,7 @@ from mantid.simpleapi import (
     SaveNexusProcessed,
     EditInstrumentGeometry,
     ConvertUnits,
+    ConvertToHistogram
 )
 from mantid import config
 
