@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
-from os import isfile, listdir
-from os.path import join
+from os import listdir
+from os.path import isfile, join
 
 import cv2
 import numpy as np
