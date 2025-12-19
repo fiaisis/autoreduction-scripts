@@ -2,10 +2,12 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
-import cv2
 from pathlib import Path
 from typing import Any
+from os import isfile, listdir
+from os.path import join
 
+import cv2
 import numpy as np
 
 from mantidimaging import __version__
