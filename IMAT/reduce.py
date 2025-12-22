@@ -13,9 +13,16 @@ import numpy as np
 # Before importing mantidimaging try to spawn processes instead of forking them, also stop tracking leaked shared_memory objects as not relevant in shortlived containers.
 import multiprocessing as mp
 import multiprocessing.resource_tracker as rt
+import atexit
 
 mp.set_start_method("spawn", force=True)
-rt.unregister = lambda *args, **kwargs: None
+def _silence_resource_tracker():
+    try:
+        rt._resource_tracker._cache.clear()
+    except Exception:
+        pass
+atexit.register(_silence_resource_tracker)
+
 
 from mantidimaging import __version__
 from mantidimaging.core.data import ImageStack
