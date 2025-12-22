@@ -10,6 +10,11 @@ from os.path import isfile, join
 import cv2
 import numpy as np
 
+# Before importing mantidimaging try to spawn processes instead of forking them
+import multiprocessing as mp
+
+mp.set_start_method("spawn", force=True)
+
 from mantidimaging import __version__
 from mantidimaging.core.data import ImageStack
 from mantidimaging.core.data.dataset import Dataset
