@@ -10,10 +10,12 @@ from os.path import isfile, join
 import cv2
 import numpy as np
 
-# Before importing mantidimaging try to spawn processes instead of forking them
+# Before importing mantidimaging try to spawn processes instead of forking them, also stop tracking leaked shared_memory objects as not relevant in shortlived containers.
 import multiprocessing as mp
+import multiprocessing.resource_tracker as rt
 
 mp.set_start_method("spawn", force=True)
+rt.unregister = lambda *args, **kwargs: None
 
 from mantidimaging import __version__
 from mantidimaging.core.data import ImageStack
