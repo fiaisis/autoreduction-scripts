@@ -197,7 +197,7 @@ output.append(f"{runno}_back_dd.nxs")
 SaveNexusProcessed(InputWorkspace=f"{runno}_back_sd", Filename=f"{runno}_back_sd.nxs")
 output.append(f"{runno}_back_sd.nxs")
 SaveNexusProcessed(InputWorkspace=f"{runno}_front", Filename=f"{runno}_front.nxs")
-output.append(f"{runno}_back_front.nxs")
+output.append(f"{runno}_front.nxs")
 
 # Run diffraction
 ISISIndirectDiffractionReduction(
