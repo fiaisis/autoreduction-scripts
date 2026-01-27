@@ -73,14 +73,38 @@ from VesuvioTransmission import VesuvioTransmission
 ip = "IP0005.par"
 empty_runs = "50309-50341"
 runno = "52695"
-file_name = (
-    requests.get(
-        f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}"
-    ).text.strip("\n")
-    + f"/VESUVIO000{runno}.raw"
-)
 
-print(f"Starting with file: {file_name}")
+def get_vesuvio_file_path(run_num):
+    """Resolve the full path for a single VESUVIO run."""
+    try:
+        # Resolve path via ISIS data lookup
+        resolved = requests.get(
+            f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{run_num}"
+        ).text.strip("\n")
+        return f"{resolved}/VESUVIO{int(run_num):08d}.raw"
+    except Exception:
+        # Fallback to run number if resolution fails
+        return str(run_num)
+
+if "-" in runno or "," in runno:
+    # Multiple runs: LoadVesuvio supports range strings directly for Filename
+    # but ISISIndirectDiffractionReduction might prefer comma-separated full paths.
+    file_name = runno
+    
+    # Resolve individual paths for diffraction reduction
+    import re
+    if "-" in runno:
+        start, end = map(int, runno.split("-"))
+        run_list = [str(r) for r in range(start, end + 1)]
+    else:
+        run_list = [r.strip() for r in runno.split(",")]
+    
+    diffraction_input = ",".join([get_vesuvio_file_path(r) for r in run_list])
+else:
+    file_name = get_vesuvio_file_path(runno)
+    diffraction_input = file_name
+
+print(f"Starting with input: {file_name}")
 
 # Default constants
 filepath_ip = f"/extras/vesuvio/{ip}"
@@ -201,7 +225,7 @@ output.append(f"{runno}_front.nxs")
 
 # Run diffraction
 ISISIndirectDiffractionReduction(
-    InputFiles=file_name,
+    InputFiles=diffraction_input,
     OutputWorkspace=runno + "_diffraction",
     Instrument="VESUVIO",
     Mode="diffspec",
