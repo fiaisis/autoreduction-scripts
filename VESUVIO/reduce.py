@@ -11,9 +11,11 @@ from mantid.simpleapi import (
     SaveNexusProcessed,
     EditInstrumentGeometry,
     ConvertUnits,
-    ConvertToHistogram
+    ConvertToHistogram,
+    MergeRuns,
 )
 from mantid import config
+from mantid.api import AnalysisDataService
 
 
 # Define Utility functions
@@ -72,7 +74,9 @@ from VesuvioTransmission import VesuvioTransmission
 # Setup by rundetection
 ip = "IP0005.par"
 empty_runs = "50309-50341"
-runno = "52695"
+run_numbers = ["52695"]
+sum_runs = len(run_numbers) > 1
+
 
 def get_vesuvio_file_path(run_num):
     """Resolve the full path for a single VESUVIO run."""
@@ -86,25 +90,40 @@ def get_vesuvio_file_path(run_num):
         # Fallback to run number if resolution fails
         return str(run_num)
 
-if "-" in runno or "," in runno:
-    # Multiple runs: LoadVesuvio supports range strings directly for Filename
-    # but ISISIndirectDiffractionReduction might prefer comma-separated full paths.
-    file_name = runno
-    
-    # Resolve individual paths for diffraction reduction
-    import re
-    if "-" in runno:
-        start, end = map(int, runno.split("-"))
-        run_list = [str(r) for r in range(start, end + 1)]
-    else:
-        run_list = [r.strip() for r in runno.split(",")]
-    
-    diffraction_input = ",".join([get_vesuvio_file_path(r) for r in run_list])
+
+# Resolve input runs and generate names
+if sum_runs:
+    runno = f"{run_numbers[0]}-summed"
+    file_name = ",".join([str(r) for r in run_numbers])
 else:
+    runno = str(run_numbers[0])
     file_name = get_vesuvio_file_path(runno)
-    diffraction_input = file_name
+
+# Prepare diffraction input (always comma separated full paths)
+run_list = [str(r) for r in run_numbers]
+diffraction_input = ",".join([get_vesuvio_file_path(r) for r in run_list])
 
 print(f"Starting with input: {file_name}")
+
+
+def load_and_merge(
+    filename, spectrum_list, mode, ip_file, output_name, sum_spectra=True
+):
+    """Load runs and optionally merge them if they form a group."""
+    LoadVesuvio(
+        Filename=filename,
+        SpectrumList=spectrum_list,
+        Mode=mode,
+        InstrumentParFile=ip_file,
+        SumSpectra=sum_spectra,
+        OutputWorkspace=output_name,
+    )
+    if AnalysisDataService.doesExist(output_name):
+        ws = AnalysisDataService.retrieve(output_name)
+        if hasattr(ws, "isGroup") and ws.isGroup() and sum_runs:
+            MergeRuns(InputWorkspaces=output_name, OutputWorkspace=output_name)
+    return output_name
+
 
 # Default constants
 filepath_ip = f"/extras/vesuvio/{ip}"
@@ -127,29 +146,29 @@ for index, value in enumerate(back_scattering_spectra_range):
     back_scattering_spectra_range[index] = int(value)
 
 # Load Empty runs
-LoadVesuvio(
-    Filename=empty_runs,
-    SpectrumList=back_scattering_spectra,
-    Mode="SingleDifference",
-    InstrumentParFile=filepath_ip,
-    SumSpectra=True,
-    OutputWorkspace="empty_back_sd",
+load_and_merge(
+    filename=empty_runs,
+    spectrum_list=back_scattering_spectra,
+    mode="SingleDifference",
+    ip_file=filepath_ip,
+    sum_spectra=True,
+    output_name="empty_back_sd",
 )
-LoadVesuvio(
-    Filename=empty_runs,
-    SpectrumList=back_scattering_spectra,
-    Mode="DoubleDifference",
-    InstrumentParFile=filepath_ip,
-    SumSpectra=True,
-    OutputWorkspace="empty_back_dd",
+load_and_merge(
+    filename=empty_runs,
+    spectrum_list=back_scattering_spectra,
+    mode="DoubleDifference",
+    ip_file=filepath_ip,
+    sum_spectra=True,
+    output_name="empty_back_dd",
 )
-LoadVesuvio(
-    Filename=empty_runs,
-    SpectrumList=forward_scattering_spectra,
-    Mode="FoilInOut",
-    InstrumentParFile=filepath_ip,
-    SumSpectra=True,
-    OutputWorkspace="empty_gamma",
+load_and_merge(
+    filename=empty_runs,
+    spectrum_list=forward_scattering_spectra,
+    mode="FoilInOut",
+    ip_file=filepath_ip,
+    sum_spectra=True,
+    output_name="empty_gamma",
 )
 CropWorkspace(
     InputWorkspace="empty_gamma",
@@ -159,40 +178,40 @@ CropWorkspace(
 )
 
 # Setup run file for processing, then process the file.
-LoadVesuvio(
-    Filename=file_name,
-    SpectrumList=forward_scattering_spectra,
-    Mode="SingleDifference",
-    InstrumentParFile=filepath_ip,
-    SumSpectra=True,
-    OutputWorkspace=runno + "_front",
+load_and_merge(
+    filename=file_name,
+    spectrum_list=forward_scattering_spectra,
+    mode="SingleDifference",
+    ip_file=filepath_ip,
+    sum_spectra=True,
+    output_name=runno + "_front",
 )
-LoadVesuvio(
-    Filename=file_name,
-    SpectrumList=back_scattering_spectra,
-    Mode="SingleDifference",
-    InstrumentParFile=filepath_ip,
-    SumSpectra=True,
-    OutputWorkspace=runno + "_back_sd",
+load_and_merge(
+    filename=file_name,
+    spectrum_list=back_scattering_spectra,
+    mode="SingleDifference",
+    ip_file=filepath_ip,
+    sum_spectra=True,
+    output_name=runno + "_back_sd",
 )
 ConvertToHistogram("empty_back_sd", OutputWorkspace="empty_back_sd")
-ConvertToHistogram(runno+"_back_sd",  OutputWorkspace=runno+"_back_sd")
+ConvertToHistogram(runno + "_back_sd", OutputWorkspace=runno + "_back_sd")
 RebinToWorkspace("empty_back_sd", runno + "_back_sd", OutputWorkspace="empty_back_sd")
 Minus(
     LHSWorkspace=runno + "_back_sd",
     RHSWorkspace="empty_back_sd",
     OutputWorkspace=runno + "_back_sd",
 )
-LoadVesuvio(
-    Filename=file_name,
-    SpectrumList=back_scattering_spectra,
-    Mode="DoubleDifference",
-    InstrumentParFile=filepath_ip,
-    SumSpectra=True,
-    OutputWorkspace=runno + "_back_dd",
+load_and_merge(
+    filename=file_name,
+    spectrum_list=back_scattering_spectra,
+    mode="DoubleDifference",
+    ip_file=filepath_ip,
+    sum_spectra=True,
+    output_name=runno + "_back_dd",
 )
 ConvertToHistogram("empty_back_dd", OutputWorkspace="empty_back_dd")
-ConvertToHistogram(runno+"_back_dd",  OutputWorkspace=runno+"_back_dd")
+ConvertToHistogram(runno + "_back_dd", OutputWorkspace=runno + "_back_dd")
 RebinToWorkspace("empty_back_dd", runno + "_back_dd", OutputWorkspace="empty_back_dd")
 Minus(
     LHSWorkspace=runno + "_back_dd",
@@ -230,7 +249,9 @@ ISISIndirectDiffractionReduction(
     Instrument="VESUVIO",
     Mode="diffspec",
     SpectraRange=back_scattering_spectra_range,
+    SumFiles=sum_runs,
 )
+
 diffraction_output = "vesuvio" + runno + "_diffspec_red"
 SaveNexusProcessed(
     InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs"
@@ -240,7 +261,7 @@ output.append(f"{diffraction_output}.nxs")
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
     "OutputWorkspace": runno,
-    "Runs": runno,
+    "Runs": file_name,
     "EmptyRuns": empty_runs,
     "Grouping": "SumOfAllRuns",
     "Target": "Energy",
@@ -250,6 +271,15 @@ vesuvio_transmission_args = {
 }
 run_alg(VesuvioTransmission, vesuvio_transmission_args)
 transmission_output = runno + "_transmission"
+
+# Check if transmission outputs are groups and merge if requested
+for suffix in ["", "_XS"]:
+    ws_name = transmission_output + suffix
+    if AnalysisDataService.doesExist(ws_name):
+        ws = AnalysisDataService.retrieve(ws_name)
+        if hasattr(ws, "isGroup") and ws.isGroup() and sum_runs:
+            MergeRuns(InputWorkspaces=ws_name, OutputWorkspace=ws_name)
+
 SaveNexusProcessed(
     InputWorkspace=transmission_output, Filename=f"{transmission_output}.nxs"
 )
@@ -260,13 +290,13 @@ SaveNexusProcessed(
 output.append(f"{transmission_output}_XS.nxs")
 
 # Run LoadVesuvio for gamma
-LoadVesuvio(
-    Filename=file_name,
-    SpectrumList="135-182",
-    Mode="FoilInOut",
-    InstrumentParFile=filepath_ip,
-    SumSpectra=True,
-    OutputWorkspace=runno + "_gamma",
+load_and_merge(
+    filename=file_name,
+    spectrum_list="135-182",
+    mode="FoilInOut",
+    ip_file=filepath_ip,
+    sum_spectra=True,
+    output_name=runno + "_gamma",
 )
 CropWorkspace(
     InputWorkspace=runno + "_gamma",
@@ -275,7 +305,7 @@ CropWorkspace(
     OutputWorkspace=runno + "_gamma",
 )
 ConvertToHistogram("empty_gamma", OutputWorkspace="empty_gamma")
-ConvertToHistogram(runno+"_gamma",  OutputWorkspace=runno+"_gamma")
+ConvertToHistogram(runno + "_gamma", OutputWorkspace=runno + "_gamma")
 RebinToWorkspace("empty_gamma", runno + "_gamma", OutputWorkspace="empty_gamma")
 Minus(
     LHSWorkspace=runno + "_gamma",
