@@ -74,6 +74,7 @@ get_file_from_request(
  
 # Setup by rundetection
 ip = "IP0005.par"
+diff_ip = "IP0005.par"
 empty_runs = "50309-50341"
 runno = "52695-52697"
 sum_runs = False
@@ -130,6 +131,7 @@ print(f"Starting with input: {file_name}")
 
 # Default constants
 filepath_ip = f"/extras/vesuvio/{ip}"
+diff_filepath_ip = f"/extras/vesuvio/{diff_ip}"
 rebin_vesuvio_run_parameters = "50,1,500"
 rebin_transmission_parameters = "0.6,-0.05,1.e7"
 crop_min = 10
@@ -253,8 +255,9 @@ ISISIndirectDiffractionReduction(
     Mode="diffspec",
     SpectraRange=back_scattering_spectra_range,
     SumFiles=sum_runs,
+    InstrumentParFile=diff_filepath_ip,
 )
- 
+
 diffraction_output = "vesuvio" + runno + "_diffspec_red"
 SaveNexusProcessed(
     InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs"
