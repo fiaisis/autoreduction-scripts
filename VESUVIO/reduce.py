@@ -80,6 +80,17 @@ sum_runs = False
  
 if "," in runno or "-" in runno:
     sum_runs = True
+
+# Resolve file names and paths
+file_name = runno
+empty_runs = empty_runs
+diffraction_input = runno
+ 
+if sum_runs:
+    if "," in runno:
+        runno = f"{runno.split(',')[0]}-summed"
+    elif "-" in runno:
+        runno = f"{runno.split('-')[0]}-summed"
  
  
 # #def get_vesuvio_file_path(run_num):
@@ -117,13 +128,7 @@ if "," in runno or "-" in runno:
 #     return ",".join([get_vesuvio_file_path(r) for r in run_list])
 #
  
-# Resolve file names and paths
-file_name = runno
-empty_runs = empty_runs
-diffraction_input = runno
- 
-if sum_runs:
-    runno = f"{runno.split('-')[0]}-summed"
+
  
 print(f"Starting with input: {file_name}")
  
