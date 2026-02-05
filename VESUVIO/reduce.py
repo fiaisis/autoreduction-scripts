@@ -75,8 +75,8 @@ get_file_from_request(
 # Setup by rundetection
 ip = "IP0005.par"
 diff_ip = "IP0005.par"
-empty_runs = "50309-50341"
-runno = "52695-52697"
+empty_runs = "50309,50310,50311"
+runno = "50312,50313,50314"
 sum_runs = False
  
 if "," in runno or "-" in runno:
@@ -92,45 +92,8 @@ if sum_runs:
         runno = f"{runno.split(',')[0]}-summed"
     elif "-" in runno:
         runno = f"{runno.split('-')[0]}-summed"
- 
- 
-# #def get_vesuvio_file_path(run_num):
-#  #   """Resolve the full path for a single VESUVIO run."""
-#   #  try:
-#   #      if os.name == 'nt':
-#   #          os_name = "win"
-#         else:
-#             os_name = "unix"
-#         # Resolve path via ISIS data lookup
-#         resolved = requests.get(
-#             f"http://data.isis.rl.ac.uk/where.py/{os_name}dir?name=VESUVIO{run_num}"
-#         ).text.strip("\n")
-#         return f"{resolved}/VESUVIO{int(run_num):08d}.raw"
-#     except Exception:
-#         # Fallback to run number if resolution fails
-#         return str(run_num)
- 
- 
-# def resolve_runs_to_paths(runs_input):
-#     """
-#     Expands ranges or lists and resolves each run number to its archive path.
-#     Returns a comma-separated string of absolute paths.
-#     """
-#     if isinstance(runs_input, list):
-#         run_list = [str(r) for r in runs_input]
-#     elif "-" in runs_input:
-#         start, end = map(int, runs_input.split("-"))
-#         run_list = [str(r) for r in range(start, end + 1)]
-#     elif "," in runs_input:
-#         run_list = [r.strip() for r in runs_input.split(",")]
-#     else:
-#         run_list = [str(runs_input)]
-#
-#     return ",".join([get_vesuvio_file_path(r) for r in run_list])
-#
- 
 
- 
+
 print(f"Starting with input: {file_name}")
  
 
