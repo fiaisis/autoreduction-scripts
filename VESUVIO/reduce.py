@@ -63,7 +63,29 @@ def run_alg(algorithm_class, args):
     for key, value in args.items():
         alg.setProperty(key, value)
     alg.execute()
- 
+
+
+def get_output_path(file_type: str, is_sum: bool) -> str:
+    """
+    Determine the output path for a given file type (Linux paths)
+    :param file_type: one of 'back', 'front', 'diffraction', 'gamma', 'transmission'
+    :param is_sum: True if multiple runs are being summed, False for single runs
+    :return: Full path to output directory (e.g., '/output/back/sum')
+    """
+    base_dir = "/output"
+    
+    if file_type in ['gamma', 'transmission']:
+        return base_dir
+    
+    mode = "sum" if is_sum else "single"
+    # os.path.join handles path construction correctly on Linux
+    subdir = os.path.join(base_dir, file_type, mode)
+    
+    # Create directory if it doesn't exist (Linux-compatible)
+    os.makedirs(subdir, exist_ok=True)
+    
+    return subdir
+
  
 # Get VesuvioTransmission
 get_file_from_request(
@@ -76,7 +98,7 @@ get_file_from_request(
 ip = "IP0005.par"
 diff_ip = "IP0005.par"
 empty_runs = "50309,50310,50311"
-runno = "50312,50313,50314"
+runno = "50312"
 sum_runs = False
 output_workspace_prefix = "vesuvio"
  
@@ -93,23 +115,26 @@ if sum_runs:
         input_runs = runno.split(",")
     elif "-" in runno:
         input_runs = runno.split("-")
+    
+    if len(input_runs) > 6:
+        output_workspace_prefix += str(input_runs[0]) + ","
+        output_workspace_prefix += str(input_runs[1]) + ","
+        output_workspace_prefix += str(input_runs[2])
+        output_workspace_prefix += "..."
+        output_workspace_prefix += str(input_runs[-3]) + ","
+        output_workspace_prefix += str(input_runs[-2]) + ","
+        output_workspace_prefix += str(input_runs[-1]) + ","
+    else:
+        for input_run in input_runs:
+            output_workspace_prefix += str(input_run) + ","
+    output_workspace_prefix = output_workspace_prefix[:-1] + f"_Reduced"  # Slice out the excess "," and finalize prefix
 
+else:
+    input_runs = runno
+    output_workspace_prefix = str(input_runs) + f"_Reduced"
 
 
 print(f"Starting with input: {file_name}")
-
-if len(input_runs) > 6:
-    output_workspace_prefix += str(input_runs[0]) + ","
-    output_workspace_prefix += str(input_runs[1]) + ","
-    output_workspace_prefix += str(input_runs[2])
-    output_workspace_prefix += "..."
-    output_workspace_prefix += str(input_runs[-3]) + ","
-    output_workspace_prefix += str(input_runs[-2]) + ","
-    output_workspace_prefix += str(input_runs[-1]) + ","
-else:
-    for input_run in input_runs:
-        output_workspace_prefix += str(input_run) + ","
-output_workspace_prefix = output_workspace_prefix[:-1] + f"_Reduced"  # Slice out the excess "," and finalize prefix
 
 
 # Default constants
@@ -223,12 +248,15 @@ Rebin(
 )
  
 # Save out LoadVesuvio results
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{output_workspace_prefix}_back_dd.nxs")
-output.append(f"{output_workspace_prefix}_back_dd.nxs")
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{output_workspace_prefix}_back_sd.nxs")
-output.append(f"{output_workspace_prefix}_back_sd.nxs")
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{output_workspace_prefix}_front.nxs")
-output.append(f"{output_workspace_prefix}_front.nxs")
+back_output_dir = get_output_path('back', sum_runs)
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+output.append(f"{back_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+output.append(f"{back_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+
+front_output_dir = get_output_path('front', sum_runs)
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_output_dir}/{output_workspace_prefix}_front.nxs")
+output.append(f"{front_output_dir}/{output_workspace_prefix}_front.nxs")
  
 # Run diffraction
 ISISIndirectDiffractionReduction(
@@ -250,10 +278,11 @@ else:
     diffraction_output = actual_diffraction_workspace.name()
 print(f"Actual workspace created: {diffraction_output}")
 
+diffraction_output_dir = get_output_path('diffraction', sum_runs)
 SaveNexusProcessed(
-    InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs"
+    InputWorkspace=diffraction_output, Filename=f"{diffraction_output_dir}/{diffraction_output}.nxs"
 )
-output.append(f"{diffraction_output}.nxs")
+output.append(f"{diffraction_output_dir}/{diffraction_output}.nxs")
  
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
@@ -270,14 +299,15 @@ run_alg(VesuvioTransmission, vesuvio_transmission_args)
 transmission_output = runno + "_transmission"
 
  
+transmission_output_dir = get_output_path('transmission', sum_runs)
 SaveNexusProcessed(
-    InputWorkspace=transmission_output, Filename=f"{transmission_output}.nxs"
+    InputWorkspace=transmission_output, Filename=f"{transmission_output_dir}/{transmission_output}.nxs"
 )
-output.append(f"{transmission_output}.nxs")
+output.append(f"{transmission_output_dir}/{transmission_output}.nxs")
 SaveNexusProcessed(
-    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output}_XS.nxs"
+    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output_dir}/{transmission_output}_XS.nxs"
 )
-output.append(f"{transmission_output}_XS.nxs")
+output.append(f"{transmission_output_dir}/{transmission_output}_XS.nxs")
  
 # Run LoadVesuvio for gamma
 LoadVesuvio(
@@ -302,8 +332,9 @@ Minus(
     RHSWorkspace="empty_gamma",
     OutputWorkspace=output_workspace_prefix +  "_gamma",
 )
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{output_workspace_prefix}_gamma.nxs")
-output.append(f"{output_workspace_prefix}_gamma.nxs")
+gamma_output_dir = get_output_path('gamma', sum_runs)
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma.nxs")
+output.append(f"{gamma_output_dir}/{output_workspace_prefix}_gamma.nxs")
  
 EditInstrumentGeometry(
     Workspace=output_workspace_prefix + "_gamma",
@@ -314,6 +345,6 @@ EditInstrumentGeometry(
 ConvertUnits(
     InputWorkspace=output_workspace_prefix + "_gamma", OutputWorkspace=output_workspace_prefix + "_gamma_E", Target="Energy"
 )
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{output_workspace_prefix}_gamma_E.nxs")
-output.append(f"{output_workspace_prefix}_gamma_E.nxs")
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+output.append(f"{gamma_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
  
