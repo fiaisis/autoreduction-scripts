@@ -256,14 +256,14 @@ back_ascii_output_dir = get_output_path('back', sum_runs, 'ascii')
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_dd.nxs")
 output.append(f"{back_nxs_output_dir}/{output_workspace_prefix}_back_dd.nxs")
 
-SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.ascii")
-output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.ascii")
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.txt")
+output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.txt")
 
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_sd.nxs")
 output.append(f"{back_nxs_output_dir}/{output_workspace_prefix}_back_sd.nxs")
 
-SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.ascii")
-output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.ascii")
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.txt")
+output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.txt")
 
 front_nxs_output_dir = get_output_path('front', sum_runs, 'nexus')
 front_ascii_output_dir = get_output_path('front', sum_runs, 'ascii')
@@ -271,8 +271,8 @@ front_ascii_output_dir = get_output_path('front', sum_runs, 'ascii')
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_nxs_output_dir}/{output_workspace_prefix}_front.nxs")
 output.append(f"{front_nxs_output_dir}/{output_workspace_prefix}_front.nxs")
 
-SaveAscii(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_ascii_output_dir}/{output_workspace_prefix}_front.ascii")
-output.append(f"{front_ascii_output_dir}/{output_workspace_prefix}_front.ascii")
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_ascii_output_dir}/{output_workspace_prefix}_front.txt")
+output.append(f"{front_ascii_output_dir}/{output_workspace_prefix}_front.txt")
  
 # Run diffraction
 ISISIndirectDiffractionReduction(
@@ -301,8 +301,8 @@ SaveNexusProcessed(
 )
 output.append(f"{diffraction_nxs_output_dir}/{diffraction_output}.nxs")
 
-SaveAscii(InputWorkspace=diffraction_output, Filename=f"{diffraction_ascii_output_dir}/{diffraction_output}.ascii")
-output.append(f"{diffraction_ascii_output_dir}/{diffraction_output}.ascii")
+SaveAscii(InputWorkspace=diffraction_output, Filename=f"{diffraction_ascii_output_dir}/{diffraction_output}.txt")
+output.append(f"{diffraction_ascii_output_dir}/{diffraction_output}.txt")
  
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
@@ -326,16 +326,16 @@ SaveNexusProcessed(
 )
 output.append(f"{transmission_nxs_output_dir}/{transmission_output}.nxs")
 
-SaveAscii(InputWorkspace=transmission_output, Filename=f"{transmission_ascii_output_dir}/{transmission_output}.ascii")
-output.append(f"{transmission_ascii_output_dir}/{transmission_output}.ascii")
+SaveAscii(InputWorkspace=transmission_output, Filename=f"{transmission_ascii_output_dir}/{transmission_output}.txt")
+output.append(f"{transmission_ascii_output_dir}/{transmission_output}.txt")
 
 SaveNexusProcessed(
     InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_nxs_output_dir}/{transmission_output}_XS.nxs"
 )
 output.append(f"{transmission_nxs_output_dir}/{transmission_output}_XS.nxs")
 
-SaveAscii(InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_ascii_output_dir}/{transmission_output}_XS.ascii")
-output.append(f"{transmission_ascii_output_dir}/{transmission_output}_XS.ascii")
+SaveAscii(InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_ascii_output_dir}/{transmission_output}_XS.txt")
+output.append(f"{transmission_ascii_output_dir}/{transmission_output}_XS.txt")
  
 # Run LoadVesuvio for gamma
 LoadVesuvio(
@@ -367,8 +367,8 @@ gamma_ascii_output_dir = get_output_path('gamma', sum_runs, 'ascii')
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
 output.append(f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
 
-SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.ascii")
-output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.ascii")
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.txt")
+output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.txt")
  
 EditInstrumentGeometry(
     Workspace=output_workspace_prefix + "_gamma",
@@ -382,6 +382,6 @@ ConvertUnits(
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
 output.append(f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
 
-SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.ascii")
-output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.ascii")
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.txt")
+output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.txt")
  
