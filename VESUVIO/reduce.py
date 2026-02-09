@@ -11,6 +11,7 @@ from mantid.simpleapi import (
     RebinToWorkspace,
     ISISIndirectDiffractionReduction,
     SaveNexusProcessed,
+    SaveAscii,
     EditInstrumentGeometry,
     ConvertUnits,
     ConvertToHistogram
@@ -65,21 +66,22 @@ def run_alg(algorithm_class, args):
     alg.execute()
 
 
-def get_output_path(file_type: str, is_sum: bool) -> str:
+def get_output_path(red_type: str, is_sum: bool, file_type: str) -> str:
     """
     Determine the output path for a given file type (Linux paths)
     :param file_type: one of 'back', 'front', 'diffraction', 'gamma', 'transmission'
     :param is_sum: True if multiple runs are being summed, False for single runs
+    :param file_type: nexus or ascii
     :return: Full path to output directory (e.g., '/output/back/sum')
     """
     base_dir = "/output"
     
-    if file_type in ['gamma', 'transmission']:
+    if red_type in ['gamma', 'transmission']:
         return base_dir
     
     mode = "sum" if is_sum else "single"
     # os.path.join handles path construction correctly on Linux
-    subdir = os.path.join(base_dir, file_type, mode)
+    subdir = os.path.join(base_dir, red_type, mode, file_type)
     
     # Create directory if it doesn't exist (Linux-compatible)
     os.makedirs(subdir, exist_ok=True)
@@ -248,15 +250,29 @@ Rebin(
 )
  
 # Save out LoadVesuvio results
-back_output_dir = get_output_path('back', sum_runs)
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_dd.nxs")
-output.append(f"{back_output_dir}/{output_workspace_prefix}_back_dd.nxs")
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_sd.nxs")
-output.append(f"{back_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+back_nxs_output_dir = get_output_path('back', sum_runs, 'nexus')
+back_ascii_output_dir = get_output_path('back', sum_runs, 'ascii')
 
-front_output_dir = get_output_path('front', sum_runs)
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_output_dir}/{output_workspace_prefix}_front.nxs")
-output.append(f"{front_output_dir}/{output_workspace_prefix}_front.nxs")
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+output.append(f"{back_nxs_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.ascii")
+output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.ascii")
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+output.append(f"{back_nxs_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.ascii")
+output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.ascii")
+
+front_nxs_output_dir = get_output_path('front', sum_runs, 'nexus')
+front_ascii_output_dir = get_output_path('front', sum_runs, 'ascii')
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_nxs_output_dir}/{output_workspace_prefix}_front.nxs")
+output.append(f"{front_nxs_output_dir}/{output_workspace_prefix}_front.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_ascii_output_dir}/{output_workspace_prefix}_front.ascii")
+output.append(f"{front_ascii_output_dir}/{output_workspace_prefix}_front.ascii")
  
 # Run diffraction
 ISISIndirectDiffractionReduction(
@@ -278,11 +294,15 @@ else:
     diffraction_output = actual_diffraction_workspace.name()
 print(f"Actual workspace created: {diffraction_output}")
 
-diffraction_output_dir = get_output_path('diffraction', sum_runs)
+diffraction_nxs_output_dir = get_output_path('diffraction', sum_runs, 'nexus')
+diffraction_ascii_output_dir = get_output_path('diffraction', sum_runs, 'ascii')
 SaveNexusProcessed(
-    InputWorkspace=diffraction_output, Filename=f"{diffraction_output_dir}/{diffraction_output}.nxs"
+    InputWorkspace=diffraction_output, Filename=f"{diffraction_nxs_output_dir}/{diffraction_output}.nxs"
 )
-output.append(f"{diffraction_output_dir}/{diffraction_output}.nxs")
+output.append(f"{diffraction_nxs_output_dir}/{diffraction_output}.nxs")
+
+SaveAscii(InputWorkspace=diffraction_output, Filename=f"{diffraction_ascii_output_dir}/{diffraction_output}.ascii")
+output.append(f"{diffraction_ascii_output_dir}/{diffraction_output}.ascii")
  
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
@@ -297,17 +317,25 @@ vesuvio_transmission_args = {
 }
 run_alg(VesuvioTransmission, vesuvio_transmission_args)
 transmission_output = runno + "_transmission"
-
  
-transmission_output_dir = get_output_path('transmission', sum_runs)
+transmission_nxs_output_dir = get_output_path('transmission', sum_runs, 'nexus')
+transmission_ascii_output_dir = get_output_path('transmission', sum_runs, 'ascii')
+
 SaveNexusProcessed(
-    InputWorkspace=transmission_output, Filename=f"{transmission_output_dir}/{transmission_output}.nxs"
+    InputWorkspace=transmission_output, Filename=f"{transmission_nxs_output_dir}/{transmission_output}.nxs"
 )
-output.append(f"{transmission_output_dir}/{transmission_output}.nxs")
+output.append(f"{transmission_nxs_output_dir}/{transmission_output}.nxs")
+
+SaveAscii(InputWorkspace=transmission_output, Filename=f"{transmission_ascii_output_dir}/{transmission_output}.ascii")
+output.append(f"{transmission_ascii_output_dir}/{transmission_output}.ascii")
+
 SaveNexusProcessed(
-    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output_dir}/{transmission_output}_XS.nxs"
+    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_nxs_output_dir}/{transmission_output}_XS.nxs"
 )
-output.append(f"{transmission_output_dir}/{transmission_output}_XS.nxs")
+output.append(f"{transmission_nxs_output_dir}/{transmission_output}_XS.nxs")
+
+SaveAscii(InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_ascii_output_dir}/{transmission_output}_XS.ascii")
+output.append(f"{transmission_ascii_output_dir}/{transmission_output}_XS.ascii")
  
 # Run LoadVesuvio for gamma
 LoadVesuvio(
@@ -332,9 +360,15 @@ Minus(
     RHSWorkspace="empty_gamma",
     OutputWorkspace=output_workspace_prefix +  "_gamma",
 )
-gamma_output_dir = get_output_path('gamma', sum_runs)
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma.nxs")
-output.append(f"{gamma_output_dir}/{output_workspace_prefix}_gamma.nxs")
+
+gamma_nxs_output_dir = get_output_path('gamma', sum_runs, 'nexus')
+gamma_ascii_output_dir = get_output_path('gamma', sum_runs, 'ascii')
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
+output.append(f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.ascii")
+output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.ascii")
  
 EditInstrumentGeometry(
     Workspace=output_workspace_prefix + "_gamma",
@@ -345,6 +379,9 @@ EditInstrumentGeometry(
 ConvertUnits(
     InputWorkspace=output_workspace_prefix + "_gamma", OutputWorkspace=output_workspace_prefix + "_gamma_E", Target="Energy"
 )
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
-output.append(f"{gamma_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+output.append(f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.ascii")
+output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.ascii")
  
