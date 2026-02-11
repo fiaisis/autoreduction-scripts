@@ -64,7 +64,6 @@ def run_alg(algorithm_class, args):
         alg.setProperty(key, value)
     alg.execute()
  
- 
 # Get VesuvioTransmission
 get_file_from_request(
     "https://raw.githubusercontent.com/fiaisis/autoreduction-scripts/2427463c9a0247b7d76e57493bb94b28b8a7f54b/VESUVIO/VesuvioTransmission.py",
