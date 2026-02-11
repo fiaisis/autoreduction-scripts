@@ -229,7 +229,7 @@ SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f
 output.append(f"{output_workspace_prefix}_front.nxs")
  
 # Run diffraction
-ISISIndirectDiffractionReduction(
+actual_diffraction_workspace = ISISIndirectDiffractionReduction(
     InputFiles=diffraction_input,
     OutputWorkspace=runno + "_diffraction",
     Instrument="VESUVIO",
