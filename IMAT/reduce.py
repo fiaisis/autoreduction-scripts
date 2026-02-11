@@ -2,25 +2,16 @@
 # SPDX - License - Identifier: GPL-3.0-or-later
 from __future__ import annotations
 
+import cv2
 from pathlib import Path
 from typing import Any
-from os import listdir
-from os.path import isfile, join
 
-import cv2
 import numpy as np
-
-# Hide Useless resource tracker warnings
-import os
-os.environ["MP_NO_RESOURCE_TRACKER"] = "1"
-os.environ["PYTHONWARNINGS"] = "ignore::UserWarning:multiprocessing.resource_tracker"
-# Before importing mantidimaging try to spawn processes instead of forking them, also stop tracking leaked shared_memory objects as not relevant in shortlived containers.
-import multiprocessing as mp
-mp.set_start_method("spawn", force=True)
 
 from mantidimaging import __version__
 from mantidimaging.core.data import ImageStack
 from mantidimaging.core.data.dataset import Dataset
+
 from mantidimaging.core.io.loader import loader
 from mantidimaging.core.io.loader.loader import create_loading_parameters_for_file_path, ImageParameters
 from mantidimaging.core.operations.loader import load_filter_packages
@@ -32,18 +23,14 @@ from mantidimaging.core.rotation.polyfit_correlation import find_center
 
 FILTERS = {f.__name__: f for f in load_filter_packages()}
 RECON_DEFAULT_SETTINGS = {'algorithm': 'FBP_CUDA', 'filter_name': 'ram-lak', 'cor': 1, 'tilt': 0, 'max_projection_angle': 360}
-DEBUG = False
-DEBUG_DIR = Path("/output/debug")
+DEBUG = True
+DEBUG_DIR = Path("/home/sam/fia/mi_dataset/output/debug")
 
 
 # To be edited by us for the script
-runno = 112345
-dataset_path = Path("/home/ubuntu/large")
+dataset_path = Path("/home/sam/fia/mi_dataset/medium")
+output_dir = Path("/home/sam/fia/mi_dataset/output")
 
-# Set the output dir
-output_dir = Path(f"/output/run-{runno}")
-if not output_dir.exists():
-    output_dir.mkdir()
 
 def version() -> str:
     return __version__
@@ -99,6 +86,11 @@ def run_operation(dataset: Dataset, op_name: str, params: dict[str, Any]):
         for stack in [dataset.flat_before, dataset.flat_after, dataset.dark_before, dataset.dark_after, dataset.proj180deg]:
             if stack:
                 op_func(stack, **params)
+    
+    if op_name == 'FlatFieldFilter':
+         if dataset.proj180deg:
+             print("Applying FlatField to 180 degree projection")
+             op_func(dataset.proj180deg, **params)
     
     if DEBUG:
         # Create debug directory if it doesn't exist
@@ -200,7 +192,21 @@ def run_recon(image_stack, settings=None):
 
 
 def save_stack(image_stack: ImageStack, out_dir: Path):
-    image_save(image_stack, out_dir, overwrite_all=True)
+    image_save(image_stack, out_dir, overwrite_all=True, pixel_depth="int16")
+
+
+def apply_cleanup(dataset: Dataset):
+    print("Cleaning up Transmission data (clipping > 0)")
+    
+    def _cleanup_stack(stack):
+        # Handle NaNs and Infs (replace with 1.0 - transparent)
+        np.nan_to_num(stack.data, copy=False, nan=1.0, posinf=1.0, neginf=1.0)
+        # Clip low values to avoid log(<=0)
+        np.clip(stack.data, 1e-9, None, out=stack.data)
+    
+    _cleanup_stack(dataset.sample)
+    if dataset.proj180deg:
+        _cleanup_stack(dataset.proj180deg)
 
 
 def get_contour_orientation(image) -> bool:
@@ -223,25 +229,21 @@ def get_contour_orientation(image) -> bool:
     # Get the largest contour
     largest_contour = max(contours, key=cv2.contourArea)
     
-    # Fit an oriented bounding box
-    rect = cv2.minAreaRect(largest_contour)
-    width = rect[1][0]
-    height = rect[1][1]
+    # Fit an axis-aligned bounding box
+    x, y, width, height = cv2.boundingRect(largest_contour)
     
-    # For vertical objects, width will be less than height
-    is_vertical = width > height
+    # For vertical objects, height (y-extent) should be greater than width (x-extent)
+    is_vertical = height > width
     
     if DEBUG:
         # Create debug directory if it doesn't exist
         DEBUG_DIR.mkdir(parents=True, exist_ok=True)
-        
-        # Draw the oriented bounding box for visualization
-        box = cv2.boxPoints(rect)
-        box = np.int0(box)
-        
+
         # Create RGB visualization
         viz_img = cv2.cvtColor(img_normalized, cv2.COLOR_GRAY2RGB)
-        cv2.drawContours(viz_img, [box], 0, (0, 255, 0), 2)  # Green box
+        
+        # Draw the bounding box for visualization
+        cv2.rectangle(viz_img, (x, y), (x + width, y + height), (0, 255, 0), 2)  # Green box
         
         # Add text showing orientation
         text = "VERTICAL" if is_vertical else "HORIZONTAL"
@@ -360,6 +362,9 @@ flat_field_settings = {
 }
 run_operation(dataset, "FlatFieldFilter", flat_field_settings)
 
+# Cleanup
+apply_cleanup(dataset)
+
 # Check if rotation is needed and rotate if object is horizontal
 # Check orientation in first image of stack
 is_vertical = get_contour_orientation(dataset.sample.data[0])
@@ -416,5 +421,3 @@ recon = run_recon(dataset.sample, recon_settings)
 dataset.add_recon(recon)
 
 save_stack(dataset.recons[0], output_dir)
-
-output = [f for f in listdir(output_dir) if isfile(join(output_dir, f))]
