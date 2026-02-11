@@ -23,13 +23,18 @@ from mantidimaging.core.rotation.polyfit_correlation import find_center
 
 FILTERS = {f.__name__: f for f in load_filter_packages()}
 RECON_DEFAULT_SETTINGS = {'algorithm': 'FBP_CUDA', 'filter_name': 'ram-lak', 'cor': 1, 'tilt': 0, 'max_projection_angle': 360}
-DEBUG = True
-DEBUG_DIR = Path("/home/sam/fia/mi_dataset/output/debug")
+DEBUG = False
+DEBUG_DIR = Path("/output/debug")
 
 
 # To be edited by us for the script
-dataset_path = Path("/home/sam/fia/mi_dataset/medium")
-output_dir = Path("/home/sam/fia/mi_dataset/output")
+runno = 112345
+dataset_path = Path("/home/ubuntu/large")
+
+# Set the output dir
+output_dir = Path(f"/output/run-{runno}")
+if not output_dir.exists():
+    output_dir.mkdir()
 
 
 def version() -> str:
