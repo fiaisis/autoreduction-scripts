@@ -1,6 +1,8 @@
 import requests
-
-
+import re
+import os
+ 
+ 
 from mantid.simpleapi import (
     LoadVesuvio,
     CropWorkspace,
@@ -9,13 +11,16 @@ from mantid.simpleapi import (
     RebinToWorkspace,
     ISISIndirectDiffractionReduction,
     SaveNexusProcessed,
+    SaveAscii,
     EditInstrumentGeometry,
     ConvertUnits,
     ConvertToHistogram
 )
 from mantid import config
-
-
+from mantid.api import AnalysisDataService
+from VesuvioTransmission import VesuvioTransmission
+ 
+ 
 # Define Utility functions
 def get_file_from_request(url: str, path: str) -> None:
     """
@@ -42,11 +47,11 @@ def get_file_from_request(url: str, path: str) -> None:
             success = True
             print("Successfully obtained resource")
             break
-
+ 
     if not success:
         raise RuntimeError(f"Reduction not possible with missing resource {url}")
-
-
+ 
+ 
 def run_alg(algorithm_class, args):
     """
     Run the algorithm more cleanly when imported outside of the simpleapi
@@ -61,27 +66,78 @@ def run_alg(algorithm_class, args):
     alg.execute()
 
 
+def get_output_path(red_type: str, is_sum: bool, file_type: str) -> str:
+    """
+    Determine the output path for a given file type (Linux paths)
+    :param file_type: one of 'back', 'front', 'diffraction', 'gamma', 'transmission'
+    :param is_sum: True if multiple runs are being summed, False for single runs
+    :param file_type: nexus or ascii
+    :return: Full path to output directory (e.g., '/output/back/sum')
+    """
+    base_dir = "/output"
+    
+    if red_type in ['gamma', 'transmission']:
+        return base_dir
+    
+    mode = "sum" if is_sum else "single"
+    # os.path.join handles path construction correctly on Linux
+    subdir = os.path.join(base_dir, red_type, mode, file_type)
+    
+    # Create directory if it doesn't exist (Linux-compatible)
+    os.makedirs(subdir, exist_ok=True)
+    
+    return subdir
+
+ 
 # Get VesuvioTransmission
 get_file_from_request(
     "https://raw.githubusercontent.com/fiaisis/autoreduction-scripts/2427463c9a0247b7d76e57493bb94b28b8a7f54b/VESUVIO/VesuvioTransmission.py",
     "VesuvioTransmission.py",
 )
-from VesuvioTransmission import VesuvioTransmission
-
-
+ 
+ 
 # Setup by rundetection
 ip = "IP0005.par"
 diff_ip = "IP0005.par"
-empty_runs = "50309-50341"
-runno = "52695"
-file_name = (
-    requests.get(
-        f"http://data.isis.rl.ac.uk/where.py/unixdir?name=VESUVIO{runno}"
-    ).text.strip("\n")
-    + f"/VESUVIO000{runno}.raw"
-)
+empty_runs = "50309,50310,50311"
+runno = "50312"
+sum_runs = False
+output_workspace_prefix = "vesuvio"
+ 
+if "," in runno or "-" in runno:
+    sum_runs = True
 
-print(f"Starting with file: {file_name}")
+# Resolve file names and paths
+file_name = runno
+empty_runs = empty_runs
+diffraction_input = runno
+
+if sum_runs:
+    if "," in runno:
+        input_runs = runno.split(",")
+    elif "-" in runno:
+        input_runs = runno.split("-")
+    
+    if len(input_runs) > 6:
+        output_workspace_prefix += str(input_runs[0]) + ","
+        output_workspace_prefix += str(input_runs[1]) + ","
+        output_workspace_prefix += str(input_runs[2])
+        output_workspace_prefix += "..."
+        output_workspace_prefix += str(input_runs[-3]) + ","
+        output_workspace_prefix += str(input_runs[-2]) + ","
+        output_workspace_prefix += str(input_runs[-1]) + ","
+    else:
+        for input_run in input_runs:
+            output_workspace_prefix += str(input_run) + ","
+    output_workspace_prefix = output_workspace_prefix[:-1] + f"_Reduced"  # Slice out the excess "," and finalize prefix
+
+else:
+    input_runs = runno
+    output_workspace_prefix = str(input_runs) + f"_Reduced"
+
+
+print(f"Starting with input: {file_name}")
+
 
 # Default constants
 filepath_ip = f"/extras/vesuvio/{ip}"
@@ -93,17 +149,17 @@ crop_max = 400
 back_scattering_spectra = "3-134"
 forward_scattering_spectra = "135-182"
 cache_location = "/extras/vesuvio/cached_files/"
-
+ 
 # Other configuration options
 config["defaultsave.directory"] = "/output"
 output = []
-
+ 
 # Convert back scattering spectra to a value acceptable in ISISIndirectDiffractionReduction i.e. [3, 134] instead of "3-134":
 back_scattering_spectra_range = []
 back_scattering_spectra_range.extend(back_scattering_spectra.split("-"))
 for index, value in enumerate(back_scattering_spectra_range):
     back_scattering_spectra_range[index] = int(value)
-
+ 
 # Load Empty runs
 LoadVesuvio(
     Filename=empty_runs,
@@ -111,7 +167,7 @@ LoadVesuvio(
     Mode="SingleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace="empty_back_sd",
+    OutputWorkspace= "empty_back_sd",
 )
 LoadVesuvio(
     Filename=empty_runs,
@@ -119,7 +175,7 @@ LoadVesuvio(
     Mode="DoubleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace="empty_back_dd",
+    OutputWorkspace= "empty_back_dd",
 )
 LoadVesuvio(
     Filename=empty_runs,
@@ -135,7 +191,7 @@ CropWorkspace(
     XMax=crop_max,
     OutputWorkspace="empty_gamma",
 )
-
+ 
 # Setup run file for processing, then process the file.
 LoadVesuvio(
     Filename=file_name,
@@ -143,7 +199,7 @@ LoadVesuvio(
     Mode="SingleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace=runno + "_front",
+    OutputWorkspace=output_workspace_prefix + "_front",
 )
 LoadVesuvio(
     Filename=file_name,
@@ -151,15 +207,15 @@ LoadVesuvio(
     Mode="SingleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace=runno + "_back_sd",
+    OutputWorkspace=output_workspace_prefix +  "_back_sd",
 )
 ConvertToHistogram("empty_back_sd", OutputWorkspace="empty_back_sd")
-ConvertToHistogram(runno+"_back_sd",  OutputWorkspace=runno+"_back_sd")
-RebinToWorkspace("empty_back_sd", runno + "_back_sd", OutputWorkspace="empty_back_sd")
+ConvertToHistogram(output_workspace_prefix + "_back_sd", OutputWorkspace=output_workspace_prefix + "_back_sd")
+RebinToWorkspace("empty_back_sd", output_workspace_prefix + "_back_sd", OutputWorkspace="empty_back_sd")
 Minus(
-    LHSWorkspace=runno + "_back_sd",
+    LHSWorkspace=output_workspace_prefix + "_back_sd",
     RHSWorkspace="empty_back_sd",
-    OutputWorkspace=runno + "_back_sd",
+    OutputWorkspace=output_workspace_prefix +  "_back_sd",
 )
 LoadVesuvio(
     Filename=file_name,
@@ -167,60 +223,91 @@ LoadVesuvio(
     Mode="DoubleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace=runno + "_back_dd",
+    OutputWorkspace=output_workspace_prefix +  "_back_dd",
 )
 ConvertToHistogram("empty_back_dd", OutputWorkspace="empty_back_dd")
-ConvertToHistogram(runno+"_back_dd",  OutputWorkspace=runno+"_back_dd")
-RebinToWorkspace("empty_back_dd", runno + "_back_dd", OutputWorkspace="empty_back_dd")
+ConvertToHistogram(output_workspace_prefix + "_back_dd", OutputWorkspace=output_workspace_prefix +  "_back_dd")
+RebinToWorkspace("empty_back_dd", output_workspace_prefix + "_back_dd", OutputWorkspace="empty_back_dd")
 Minus(
-    LHSWorkspace=runno + "_back_dd",
+    LHSWorkspace=output_workspace_prefix + "_back_dd",
     RHSWorkspace="empty_back_dd",
-    OutputWorkspace=runno + "_back_dd",
+    OutputWorkspace=output_workspace_prefix +  "_back_dd",
 )
 Rebin(
-    InputWorkspace=runno + "_back_sd",
-    OutputWorkspace=runno + "_back_sd",
+    InputWorkspace=output_workspace_prefix + "_back_sd",
+    OutputWorkspace=output_workspace_prefix + "_back_sd",
     Params=rebin_vesuvio_run_parameters,
 )
 Rebin(
-    InputWorkspace=runno + "_back_dd",
-    OutputWorkspace=runno + "_back_dd",
+    InputWorkspace=output_workspace_prefix + "_back_dd",
+    OutputWorkspace=output_workspace_prefix + "_back_dd",
     Params=rebin_vesuvio_run_parameters,
 )
 Rebin(
-    InputWorkspace=runno + "_front",
-    OutputWorkspace=runno + "_front",
+    InputWorkspace=output_workspace_prefix + "_front",
+    OutputWorkspace=output_workspace_prefix + "_front",
     Params=rebin_vesuvio_run_parameters,
 )
-
+ 
 # Save out LoadVesuvio results
-SaveNexusProcessed(InputWorkspace=f"{runno}_back_dd", Filename=f"{runno}_back_dd.nxs")
-output.append(f"{runno}_back_dd.nxs")
-SaveNexusProcessed(InputWorkspace=f"{runno}_back_sd", Filename=f"{runno}_back_sd.nxs")
-output.append(f"{runno}_back_sd.nxs")
-SaveNexusProcessed(InputWorkspace=f"{runno}_front", Filename=f"{runno}_front.nxs")
-output.append(f"{runno}_front.nxs")
+back_nxs_output_dir = get_output_path('back', sum_runs, 'nexus')
+back_ascii_output_dir = get_output_path('back', sum_runs, 'ascii')
 
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+output.append(f"{back_nxs_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.txt")
+output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.txt")
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+output.append(f"{back_nxs_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.txt")
+output.append(f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.txt")
+
+front_nxs_output_dir = get_output_path('front', sum_runs, 'nexus')
+front_ascii_output_dir = get_output_path('front', sum_runs, 'ascii')
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_nxs_output_dir}/{output_workspace_prefix}_front.nxs")
+output.append(f"{front_nxs_output_dir}/{output_workspace_prefix}_front.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_ascii_output_dir}/{output_workspace_prefix}_front.txt")
+output.append(f"{front_ascii_output_dir}/{output_workspace_prefix}_front.txt")
+ 
 # Run diffraction
 ISISIndirectDiffractionReduction(
-    InputFiles=file_name,
+    InputFiles=diffraction_input,
     OutputWorkspace=runno + "_diffraction",
     Instrument="VESUVIO",
     Mode="diffspec",
     SpectraRange=back_scattering_spectra_range,
+    SumFiles=sum_runs,
     InstrumentParFile=diff_filepath_ip,
 )
 
-diffraction_output = "vesuvio" + runno + "_diffspec_red"
-SaveNexusProcessed(
-    InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs"
-)
-output.append(f"{diffraction_output}.nxs")
+# Get the actual workspace name created since it differs from OutputWorkspace
+actual_diffraction_workspace = AnalysisDataService.retrieve(runno + "_diffraction")
+# If it's a workspace group, get the first item
+if hasattr(actual_diffraction_workspace, 'getItem'):
+    diffraction_output = actual_diffraction_workspace.getItem(0).name()
+else:
+    diffraction_output = actual_diffraction_workspace.name()
+print(f"Actual workspace created: {diffraction_output}")
 
+diffraction_nxs_output_dir = get_output_path('diffraction', sum_runs, 'nexus')
+diffraction_ascii_output_dir = get_output_path('diffraction', sum_runs, 'ascii')
+SaveNexusProcessed(
+    InputWorkspace=diffraction_output, Filename=f"{diffraction_nxs_output_dir}/{diffraction_output}.nxs"
+)
+output.append(f"{diffraction_nxs_output_dir}/{diffraction_output}.nxs")
+
+SaveAscii(InputWorkspace=diffraction_output, Filename=f"{diffraction_ascii_output_dir}/{diffraction_output}.txt")
+output.append(f"{diffraction_ascii_output_dir}/{diffraction_output}.txt")
+ 
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
     "OutputWorkspace": runno,
-    "Runs": runno,
+    "Runs": file_name,
     "EmptyRuns": empty_runs,
     "Grouping": "SumOfAllRuns",
     "Target": "Energy",
@@ -230,15 +317,26 @@ vesuvio_transmission_args = {
 }
 run_alg(VesuvioTransmission, vesuvio_transmission_args)
 transmission_output = runno + "_transmission"
-SaveNexusProcessed(
-    InputWorkspace=transmission_output, Filename=f"{transmission_output}.nxs"
-)
-output.append(f"{transmission_output}.nxs")
-SaveNexusProcessed(
-    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output}_XS.nxs"
-)
-output.append(f"{transmission_output}_XS.nxs")
+ 
+transmission_nxs_output_dir = get_output_path('transmission', sum_runs, 'nexus')
+transmission_ascii_output_dir = get_output_path('transmission', sum_runs, 'ascii')
 
+SaveNexusProcessed(
+    InputWorkspace=transmission_output, Filename=f"{transmission_nxs_output_dir}/{transmission_output}.nxs"
+)
+output.append(f"{transmission_nxs_output_dir}/{transmission_output}.nxs")
+
+SaveAscii(InputWorkspace=transmission_output, Filename=f"{transmission_ascii_output_dir}/{transmission_output}.txt")
+output.append(f"{transmission_ascii_output_dir}/{transmission_output}.txt")
+
+SaveNexusProcessed(
+    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_nxs_output_dir}/{transmission_output}_XS.nxs"
+)
+output.append(f"{transmission_nxs_output_dir}/{transmission_output}_XS.nxs")
+
+SaveAscii(InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_ascii_output_dir}/{transmission_output}_XS.txt")
+output.append(f"{transmission_ascii_output_dir}/{transmission_output}_XS.txt")
+ 
 # Run LoadVesuvio for gamma
 LoadVesuvio(
     Filename=file_name,
@@ -246,33 +344,44 @@ LoadVesuvio(
     Mode="FoilInOut",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace=runno + "_gamma",
+    OutputWorkspace=output_workspace_prefix +  "_gamma",
 )
 CropWorkspace(
-    InputWorkspace=runno + "_gamma",
+    InputWorkspace=output_workspace_prefix + "_gamma",
     XMin=crop_min,
     XMax=crop_max,
-    OutputWorkspace=runno + "_gamma",
+    OutputWorkspace=output_workspace_prefix +  "_gamma",
 )
 ConvertToHistogram("empty_gamma", OutputWorkspace="empty_gamma")
-ConvertToHistogram(runno+"_gamma",  OutputWorkspace=runno+"_gamma")
-RebinToWorkspace("empty_gamma", runno + "_gamma", OutputWorkspace="empty_gamma")
+ConvertToHistogram(output_workspace_prefix + "_gamma", OutputWorkspace=output_workspace_prefix + "_gamma")
+RebinToWorkspace("empty_gamma", output_workspace_prefix + "_gamma", OutputWorkspace="empty_gamma")
 Minus(
-    LHSWorkspace=runno + "_gamma",
+    LHSWorkspace=output_workspace_prefix + "_gamma",
     RHSWorkspace="empty_gamma",
-    OutputWorkspace=runno + "_gamma",
+    OutputWorkspace=output_workspace_prefix +  "_gamma",
 )
-SaveNexusProcessed(InputWorkspace=f"{runno}_gamma", Filename=f"{runno}_gamma.nxs")
-output.append(f"{runno}_gamma.nxs")
 
+gamma_nxs_output_dir = get_output_path('gamma', sum_runs, 'nexus')
+gamma_ascii_output_dir = get_output_path('gamma', sum_runs, 'ascii')
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
+output.append(f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.txt")
+output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.txt")
+ 
 EditInstrumentGeometry(
-    Workspace=runno + "_gamma",
+    Workspace=output_workspace_prefix + "_gamma",
     L2="0.0001",
     Polar="0",
     InstrumentName="VESUVIO_RESONANCE",
 )
 ConvertUnits(
-    InputWorkspace=runno + "_gamma", OutputWorkspace=runno + "_gamma_E", Target="Energy"
+    InputWorkspace=output_workspace_prefix + "_gamma", OutputWorkspace=output_workspace_prefix + "_gamma_E", Target="Energy"
 )
-SaveNexusProcessed(InputWorkspace=f"{runno}_gamma_E", Filename=f"{runno}_gamma_E.nxs")
-output.append(f"{runno}_gamma_E.nxs")
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+output.append(f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.txt")
+output.append(f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.txt")
+ 
