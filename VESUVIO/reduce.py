@@ -240,7 +240,6 @@ actual_diffraction_workspace = ISISIndirectDiffractionReduction(
 )
 
 # Get the actual workspace name created since it differs from OutputWorkspace
-actual_diffraction_workspace = AnalysisDataService.retrieve(runno + "_diffraction")
 # If it's a workspace group, get the first item
 if hasattr(actual_diffraction_workspace, 'getItem'):
     diffraction_output = actual_diffraction_workspace.getItem(0).name()
