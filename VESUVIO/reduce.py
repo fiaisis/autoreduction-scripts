@@ -125,7 +125,6 @@ cache_location = "/extras/vesuvio/cached_files/"
 # Other configuration options
 config["defaultsave.directory"] = "/output"
 output = []
- 
 # Convert back scattering spectra to a value acceptable in ISISIndirectDiffractionReduction i.e. [3, 134] instead of "3-134":
 back_scattering_spectra_range = []
 back_scattering_spectra_range.extend(back_scattering_spectra.split("-"))
