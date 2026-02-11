@@ -46,11 +46,11 @@ def get_file_from_request(url: str, path: str) -> None:
             success = True
             print("Successfully obtained resource")
             break
- 
+
     if not success:
         raise RuntimeError(f"Reduction not possible with missing resource {url}")
- 
- 
+
+
 def run_alg(algorithm_class, args):
     """
     Run the algorithm more cleanly when imported outside of the simpleapi
@@ -121,7 +121,7 @@ crop_max = 400
 back_scattering_spectra = "3-134"
 forward_scattering_spectra = "135-182"
 cache_location = "/extras/vesuvio/cached_files/"
- 
+
 # Other configuration options
 config["defaultsave.directory"] = "/output"
 output = []
@@ -130,7 +130,7 @@ back_scattering_spectra_range = []
 back_scattering_spectra_range.extend(back_scattering_spectra.split("-"))
 for index, value in enumerate(back_scattering_spectra_range):
     back_scattering_spectra_range[index] = int(value)
- 
+
 # Load Empty runs
 LoadVesuvio(
     Filename=empty_runs,
@@ -138,7 +138,7 @@ LoadVesuvio(
     Mode="SingleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace= "empty_back_sd",
+    OutputWorkspace="empty_back_sd",
 )
 LoadVesuvio(
     Filename=empty_runs,
@@ -146,7 +146,7 @@ LoadVesuvio(
     Mode="DoubleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace= "empty_back_dd",
+    OutputWorkspace="empty_back_dd",
 )
 LoadVesuvio(
     Filename=empty_runs,
@@ -162,7 +162,7 @@ CropWorkspace(
     XMax=crop_max,
     OutputWorkspace="empty_gamma",
 )
- 
+
 # Setup run file for processing, then process the file.
 LoadVesuvio(
     Filename=file_name,
@@ -252,7 +252,7 @@ SaveNexusProcessed(
     InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs"
 )
 output.append(f"{diffraction_output}.nxs")
- 
+
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
     "OutputWorkspace": runno,
@@ -276,7 +276,7 @@ SaveNexusProcessed(
     InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output}_XS.nxs"
 )
 output.append(f"{transmission_output}_XS.nxs")
- 
+
 # Run LoadVesuvio for gamma
 LoadVesuvio(
     Filename=file_name,
