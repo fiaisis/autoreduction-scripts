@@ -219,7 +219,6 @@ Rebin(
     OutputWorkspace=output_workspace_prefix + "_front",
     Params=rebin_vesuvio_run_parameters,
 )
- 
 # Save out LoadVesuvio results
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{output_workspace_prefix}_back_dd.nxs")
 output.append(f"{output_workspace_prefix}_back_dd.nxs")
