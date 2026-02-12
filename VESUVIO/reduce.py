@@ -240,12 +240,7 @@ actual_diffraction_workspace = ISISIndirectDiffractionReduction(
 )
 
 # Get the actual workspace name created since it differs from OutputWorkspace
-# If it's a workspace group, get the first item
-if hasattr(actual_diffraction_workspace, 'getItem'):
-    diffraction_output = actual_diffraction_workspace.getItem(0).name()
-else:
-    diffraction_output = actual_diffraction_workspace.name()
-print(f"Actual workspace created: {diffraction_output}")
+diffraction_output = actual_diffraction_workspace.name()
 
 SaveNexusProcessed(
     InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs"
