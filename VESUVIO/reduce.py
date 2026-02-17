@@ -67,7 +67,7 @@ def run_alg(algorithm_class, args):
 
 def get_output_path(file_type: str, is_sum: bool) -> str:
     """
-    Determine the output path for a given file type (Linux paths)
+    Determine the output path for a given file type (UNIX paths)
     :param file_type: one of 'back', 'front', 'diffraction', 'gamma', 'transmission'
     :param is_sum: True if multiple runs are being summed, False for single runs
     :return: Full path to output directory (e.g., '/output/back/sum')
