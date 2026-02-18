@@ -11,6 +11,7 @@ from mantid.simpleapi import (
     RebinToWorkspace,
     ISISIndirectDiffractionReduction,
     SaveNexusProcessed,
+    SaveAscii,
     EditInstrumentGeometry,
     ConvertUnits,
     ConvertToHistogram
@@ -64,18 +65,19 @@ def run_alg(algorithm_class, args):
     alg.execute()
 
 
-def get_output_path(file_type: str, is_sum: bool) -> str:
+def get_output_path(red_type: str, is_sum: bool, file_type: str) -> str:
     """
     Determine the output path for a given file type (UNIX paths)
     :param file_type: one of 'back', 'front', 'diffraction', 'gamma', 'transmission'
     :param is_sum: True if multiple runs are being summed, False for single runs
+    :param file_type: nexus or ascii
     :return: Full path to output directory (e.g., '/output/back/sum')
     """
     base_dir = "/output"
     
     mode = "sum" if is_sum else "single"
     # os.path.join handles path construction correctly on Linux
-    subdir = os.path.join(base_dir, file_type, mode)
+    subdir = os.path.join(base_dir, red_type, mode, file_type)
     
     # Create directory if it doesn't exist (Linux-compatible)
     os.makedirs(subdir, exist_ok=True)
@@ -243,15 +245,30 @@ Rebin(
     Params=rebin_vesuvio_run_parameters,
 )
 # Save out LoadVesuvio results
-back_output_dir = get_output_path('back', sum_runs)
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+back_nxs_output_dir = get_output_path('back', sum_runs, 'nexus')
+back_ascii_output_dir = get_output_path('back', sum_runs, 'ascii')
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_dd.nxs")
 output.append(f"{output_workspace_prefix}_back_dd.nxs")
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_dd.txt")
+output.append(f"{output_workspace_prefix}_back_dd.txt")
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_nxs_output_dir}/{output_workspace_prefix}_back_sd.nxs")
 output.append(f"{output_workspace_prefix}_back_sd.nxs")
 
-front_output_dir = get_output_path('front', sum_runs)
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_output_dir}/{output_workspace_prefix}_front.nxs")
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_ascii_output_dir}/{output_workspace_prefix}_back_sd.txt")
+output.append(f"{output_workspace_prefix}_back_sd.txt")
+
+front_nxs_output_dir = get_output_path('front', sum_runs, 'nexus')
+front_ascii_output_dir = get_output_path('front', sum_runs, 'ascii')
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_nxs_output_dir}/{output_workspace_prefix}_front.nxs")
 output.append(f"{output_workspace_prefix}_front.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_ascii_output_dir}/{output_workspace_prefix}_front.txt")
+output.append(f"{output_workspace_prefix}_front.txt")
+
  
 # Run diffraction
 actual_diffraction_workspace = ISISIndirectDiffractionReduction(
@@ -267,11 +284,15 @@ actual_diffraction_workspace = ISISIndirectDiffractionReduction(
 # Get the actual workspace name created since it differs from OutputWorkspace
 diffraction_output = actual_diffraction_workspace.name()
 
-diffraction_output_dir = get_output_path('diffraction', sum_runs)
+diffraction_nxs_output_dir = get_output_path('diffraction', sum_runs, 'nexus')
+diffraction_ascii_output_dir = get_output_path('diffraction', sum_runs, 'ascii')
 SaveNexusProcessed(
-    InputWorkspace=diffraction_output, Filename=f"{diffraction_output_dir}/{diffraction_output}.nxs"
+    InputWorkspace=diffraction_output, Filename=f"{diffraction_nxs_output_dir}/{diffraction_output}.nxs"
 )
 output.append(f"{diffraction_output}.nxs")
+
+SaveAscii(InputWorkspace=diffraction_output, Filename=f"{diffraction_ascii_output_dir}/{diffraction_output}.txt")
+output.append(f"{diffraction_output}.txt")
  
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
@@ -286,17 +307,25 @@ vesuvio_transmission_args = {
 }
 run_alg(VesuvioTransmission, vesuvio_transmission_args)
 transmission_output = runno + "_transmission"
-
  
-transmission_output_dir = get_output_path('transmission', sum_runs)
+transmission_nxs_output_dir = get_output_path('transmission', sum_runs, 'nexus')
+transmission_ascii_output_dir = get_output_path('transmission', sum_runs, 'ascii')
+
 SaveNexusProcessed(
-    InputWorkspace=transmission_output, Filename=f"{transmission_output_dir}/{transmission_output}.nxs"
+    InputWorkspace=transmission_output, Filename=f"{transmission_nxs_output_dir}/{transmission_output}.nxs"
 )
 output.append(f"{transmission_output}.nxs")
+
+SaveAscii(InputWorkspace=transmission_output, Filename=f"{transmission_ascii_output_dir}/{transmission_output}.txt")
+output.append(f"{transmission_output}.txt")
+
 SaveNexusProcessed(
-    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output_dir}/{transmission_output}_XS.nxs"
+    InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_nxs_output_dir}/{transmission_output}_XS.nxs"
 )
 output.append(f"{transmission_output}_XS.nxs")
+
+SaveAscii(InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_ascii_output_dir}/{transmission_output}_XS.txt")
+output.append(f"{transmission_output}_XS.txt")
  
 # Run LoadVesuvio for gamma
 LoadVesuvio(
@@ -321,9 +350,15 @@ Minus(
     RHSWorkspace="empty_gamma",
     OutputWorkspace=output_workspace_prefix +  "_gamma",
 )
-gamma_output_dir = get_output_path('gamma', sum_runs)
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma.nxs")
+
+gamma_nxs_output_dir = get_output_path('gamma', sum_runs, 'nexus')
+gamma_ascii_output_dir = get_output_path('gamma', sum_runs, 'ascii')
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
 output.append(f"{output_workspace_prefix}_gamma.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma.txt")
+output.append(f"{output_workspace_prefix}_gamma.txt")
  
 EditInstrumentGeometry(
     Workspace=output_workspace_prefix + "_gamma",
@@ -334,6 +369,10 @@ EditInstrumentGeometry(
 ConvertUnits(
     InputWorkspace=output_workspace_prefix + "_gamma", OutputWorkspace=output_workspace_prefix + "_gamma_E", Target="Energy"
 )
-SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+
+SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
 output.append(f"{output_workspace_prefix}_gamma_E.nxs")
+
+SaveAscii(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_ascii_output_dir}/{output_workspace_prefix}_gamma_E.txt")
+output.append(f"{output_workspace_prefix}_gamma_E.txt")
  
