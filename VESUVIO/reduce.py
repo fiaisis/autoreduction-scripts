@@ -157,6 +157,7 @@ for index, value in enumerate(back_scattering_spectra_range):
     back_scattering_spectra_range[index] = int(value)
 
 # Load Empty runs
+print("Loading empty runs")
 LoadVesuvio(
     Filename=empty_runs,
     SpectrumList=back_scattering_spectra,
@@ -189,6 +190,7 @@ CropWorkspace(
 )
 
 # Setup run file for processing, then process the file.
+print("Producing front and back workspaces")
 LoadVesuvio(
     Filename=file_name,
     SpectrumList=forward_scattering_spectra,
@@ -245,6 +247,7 @@ Rebin(
     Params=rebin_vesuvio_run_parameters,
 )
 # Save out LoadVesuvio results
+print("Saving front and back workspaces")
 back_nxs_output_dir = get_output_path('back', sum_runs, 'nexus')
 back_ascii_output_dir = get_output_path('back', sum_runs, 'ascii')
 
@@ -271,6 +274,7 @@ output.append(f"{output_workspace_prefix}_front.txt")
 
  
 # Run diffraction
+print("Producing diffraction output")
 actual_diffraction_workspace = ISISIndirectDiffractionReduction(
     InputFiles=diffraction_input,
     OutputWorkspace=runno + "_diffraction",
@@ -281,6 +285,7 @@ actual_diffraction_workspace = ISISIndirectDiffractionReduction(
     InstrumentParFile=diff_filepath_ip,
 )
 
+print("Saving diffraction output")
 # Get the actual workspace name created since it differs from OutputWorkspace
 diffraction_output = actual_diffraction_workspace.name()
 
@@ -295,6 +300,7 @@ SaveAscii(InputWorkspace=diffraction_output, Filename=f"{diffraction_ascii_outpu
 output.append(f"{diffraction_output}.txt")
  
 # Run VesuvioTransmission
+print("Producing transmission output")
 vesuvio_transmission_args = {
     "OutputWorkspace": runno,
     "Runs": file_name,
@@ -310,6 +316,8 @@ transmission_output = runno + "_transmission"
  
 transmission_nxs_output_dir = get_output_path('transmission', sum_runs, 'nexus')
 transmission_ascii_output_dir = get_output_path('transmission', sum_runs, 'ascii')
+
+print("Saving transmission output")
 
 SaveNexusProcessed(
     InputWorkspace=transmission_output, Filename=f"{transmission_nxs_output_dir}/{transmission_output}.nxs"
@@ -328,6 +336,7 @@ SaveAscii(InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_a
 output.append(f"{transmission_output}_XS.txt")
  
 # Run LoadVesuvio for gamma
+print("Producing gamma workspace")
 LoadVesuvio(
     Filename=file_name,
     SpectrumList="135-182",
@@ -353,6 +362,7 @@ Minus(
 
 gamma_nxs_output_dir = get_output_path('gamma', sum_runs, 'nexus')
 gamma_ascii_output_dir = get_output_path('gamma', sum_runs, 'ascii')
+print("Saving gamma workspace")
 
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_nxs_output_dir}/{output_workspace_prefix}_gamma.nxs")
 output.append(f"{output_workspace_prefix}_gamma.nxs")
