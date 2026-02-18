@@ -73,9 +73,6 @@ def get_output_path(file_type: str, is_sum: bool) -> str:
     """
     base_dir = "/output"
     
-    if file_type in ['gamma', 'transmission']:
-        return base_dir
-    
     mode = "sum" if is_sum else "single"
     # os.path.join handles path construction correctly on Linux
     subdir = os.path.join(base_dir, file_type, mode)
@@ -248,13 +245,13 @@ Rebin(
 # Save out LoadVesuvio results
 back_output_dir = get_output_path('back', sum_runs)
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_dd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_dd.nxs")
-output.append(f"{back_output_dir}/{output_workspace_prefix}_back_dd.nxs")
+output.append(f"{output_workspace_prefix}_back_dd.nxs")
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_back_sd", Filename=f"{back_output_dir}/{output_workspace_prefix}_back_sd.nxs")
-output.append(f"{back_output_dir}/{output_workspace_prefix}_back_sd.nxs")
+output.append(f"{output_workspace_prefix}_back_sd.nxs")
 
 front_output_dir = get_output_path('front', sum_runs)
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_output_dir}/{output_workspace_prefix}_front.nxs")
-output.append(f"{front_output_dir}/{output_workspace_prefix}_front.nxs")
+output.append(f"{output_workspace_prefix}_front.nxs")
  
 # Run diffraction
 actual_diffraction_workspace = ISISIndirectDiffractionReduction(
@@ -274,7 +271,7 @@ diffraction_output_dir = get_output_path('diffraction', sum_runs)
 SaveNexusProcessed(
     InputWorkspace=diffraction_output, Filename=f"{diffraction_output_dir}/{diffraction_output}.nxs"
 )
-output.append(f"{diffraction_output_dir}/{diffraction_output}.nxs")
+output.append(f"{diffraction_output}.nxs")
  
 # Run VesuvioTransmission
 vesuvio_transmission_args = {
@@ -295,11 +292,11 @@ transmission_output_dir = get_output_path('transmission', sum_runs)
 SaveNexusProcessed(
     InputWorkspace=transmission_output, Filename=f"{transmission_output_dir}/{transmission_output}.nxs"
 )
-output.append(f"{transmission_output_dir}/{transmission_output}.nxs")
+output.append(f"{transmission_output}.nxs")
 SaveNexusProcessed(
     InputWorkspace=f"{transmission_output}_XS", Filename=f"{transmission_output_dir}/{transmission_output}_XS.nxs"
 )
-output.append(f"{transmission_output_dir}/{transmission_output}_XS.nxs")
+output.append(f"{transmission_output}_XS.nxs")
  
 # Run LoadVesuvio for gamma
 LoadVesuvio(
@@ -326,7 +323,7 @@ Minus(
 )
 gamma_output_dir = get_output_path('gamma', sum_runs)
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma.nxs")
-output.append(f"{gamma_output_dir}/{output_workspace_prefix}_gamma.nxs")
+output.append(f"{output_workspace_prefix}_gamma.nxs")
  
 EditInstrumentGeometry(
     Workspace=output_workspace_prefix + "_gamma",
@@ -338,5 +335,5 @@ ConvertUnits(
     InputWorkspace=output_workspace_prefix + "_gamma", OutputWorkspace=output_workspace_prefix + "_gamma_E", Target="Energy"
 )
 SaveNexusProcessed(InputWorkspace=f"{output_workspace_prefix}_gamma_E", Filename=f"{gamma_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
-output.append(f"{gamma_output_dir}/{output_workspace_prefix}_gamma_E.nxs")
+output.append(f"{output_workspace_prefix}_gamma_E.nxs")
  
