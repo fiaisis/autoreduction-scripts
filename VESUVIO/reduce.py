@@ -47,11 +47,11 @@ def get_file_from_request(url: str, path: str) -> None:
             success = True
             print("Successfully obtained resource")
             break
- 
+
     if not success:
         raise RuntimeError(f"Reduction not possible with missing resource {url}")
- 
- 
+
+
 def run_alg(algorithm_class, args):
     """
     Run the algorithm more cleanly when imported outside of the simpleapi
@@ -68,7 +68,7 @@ def run_alg(algorithm_class, args):
 
 def get_output_path(red_type: str, is_sum: bool, file_type: str) -> str:
     """
-    Determine the output path for a given file type (Linux paths)
+    Determine the output path for a given file type (UNIX paths)
     :param file_type: one of 'back', 'front', 'diffraction', 'gamma', 'transmission'
     :param is_sum: True if multiple runs are being summed, False for single runs
     :param file_type: nexus or ascii
@@ -88,7 +88,7 @@ def get_output_path(red_type: str, is_sum: bool, file_type: str) -> str:
     
     return subdir
 
- 
+
 # Get VesuvioTransmission
 get_file_from_request(
     "https://raw.githubusercontent.com/fiaisis/autoreduction-scripts/2427463c9a0247b7d76e57493bb94b28b8a7f54b/VESUVIO/VesuvioTransmission.py",
@@ -149,17 +149,16 @@ crop_max = 400
 back_scattering_spectra = "3-134"
 forward_scattering_spectra = "135-182"
 cache_location = "/extras/vesuvio/cached_files/"
- 
+
 # Other configuration options
 config["defaultsave.directory"] = "/output"
 output = []
- 
 # Convert back scattering spectra to a value acceptable in ISISIndirectDiffractionReduction i.e. [3, 134] instead of "3-134":
 back_scattering_spectra_range = []
 back_scattering_spectra_range.extend(back_scattering_spectra.split("-"))
 for index, value in enumerate(back_scattering_spectra_range):
     back_scattering_spectra_range[index] = int(value)
- 
+
 # Load Empty runs
 LoadVesuvio(
     Filename=empty_runs,
@@ -167,7 +166,7 @@ LoadVesuvio(
     Mode="SingleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace= "empty_back_sd",
+    OutputWorkspace="empty_back_sd",
 )
 LoadVesuvio(
     Filename=empty_runs,
@@ -175,7 +174,7 @@ LoadVesuvio(
     Mode="DoubleDifference",
     InstrumentParFile=filepath_ip,
     SumSpectra=True,
-    OutputWorkspace= "empty_back_dd",
+    OutputWorkspace="empty_back_dd",
 )
 LoadVesuvio(
     Filename=empty_runs,
@@ -191,7 +190,7 @@ CropWorkspace(
     XMax=crop_max,
     OutputWorkspace="empty_gamma",
 )
- 
+
 # Setup run file for processing, then process the file.
 LoadVesuvio(
     Filename=file_name,
@@ -248,7 +247,6 @@ Rebin(
     OutputWorkspace=output_workspace_prefix + "_front",
     Params=rebin_vesuvio_run_parameters,
 )
- 
 # Save out LoadVesuvio results
 back_nxs_output_dir = get_output_path('back', sum_runs, 'nexus')
 back_ascii_output_dir = get_output_path('back', sum_runs, 'ascii')
@@ -275,7 +273,7 @@ SaveAscii(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_a
 output.append(f"{front_ascii_output_dir}/{output_workspace_prefix}_front.txt")
  
 # Run diffraction
-ISISIndirectDiffractionReduction(
+actual_diffraction_workspace = ISISIndirectDiffractionReduction(
     InputFiles=diffraction_input,
     OutputWorkspace=runno + "_diffraction",
     Instrument="VESUVIO",
@@ -286,13 +284,7 @@ ISISIndirectDiffractionReduction(
 )
 
 # Get the actual workspace name created since it differs from OutputWorkspace
-actual_diffraction_workspace = AnalysisDataService.retrieve(runno + "_diffraction")
-# If it's a workspace group, get the first item
-if hasattr(actual_diffraction_workspace, 'getItem'):
-    diffraction_output = actual_diffraction_workspace.getItem(0).name()
-else:
-    diffraction_output = actual_diffraction_workspace.name()
-print(f"Actual workspace created: {diffraction_output}")
+diffraction_output = actual_diffraction_workspace.name()
 
 diffraction_nxs_output_dir = get_output_path('diffraction', sum_runs, 'nexus')
 diffraction_ascii_output_dir = get_output_path('diffraction', sum_runs, 'ascii')
