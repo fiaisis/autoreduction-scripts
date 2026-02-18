@@ -17,7 +17,6 @@ from mantid.simpleapi import (
 )
 from mantid import config
 from mantid.api import AnalysisDataService
-from VesuvioTransmission import VesuvioTransmission
  
  
 # Define Utility functions
@@ -92,6 +91,7 @@ get_file_from_request(
     "https://raw.githubusercontent.com/fiaisis/autoreduction-scripts/2427463c9a0247b7d76e57493bb94b28b8a7f54b/VESUVIO/VesuvioTransmission.py",
     "VesuvioTransmission.py",
 )
+from VesuvioTransmission import VesuvioTransmission
  
  
 # Setup by rundetection
