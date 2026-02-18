@@ -75,9 +75,6 @@ def get_output_path(red_type: str, is_sum: bool, file_type: str) -> str:
     """
     base_dir = "/output"
     
-    if red_type in ['gamma', 'transmission']:
-        return base_dir
-    
     mode = "sum" if is_sum else "single"
     # os.path.join handles path construction correctly on Linux
     subdir = os.path.join(base_dir, red_type, mode, file_type)
@@ -271,6 +268,7 @@ output.append(f"{output_workspace_prefix}_front.nxs")
 
 SaveAscii(InputWorkspace=f"{output_workspace_prefix}_front", Filename=f"{front_ascii_output_dir}/{output_workspace_prefix}_front.txt")
 output.append(f"{output_workspace_prefix}_front.txt")
+
  
 # Run diffraction
 actual_diffraction_workspace = ISISIndirectDiffractionReduction(
