@@ -11,13 +11,20 @@ focus_path = "some path"
 ceria_path = "some path"
 group = GROUP["BOTH"]
 
-print(f"Starting run with focus {focus_path}, vanadium {vanadium_path}, and ceria {ceria_path}.")
-
 # Set values that don't change
 folder = focus_path.split("/")[-1].split(".")[0]
 output_dir = "/output"
 calib_file = "/opt/conda/envs/mantid/scripts/Engineering/calib/ENGINX_full_instrument_calibration_193749.nxs"
 output = []
+
+print(f"Starting run with focus {focus_path}, vanadium {vanadium_path}, and ceria {ceria_path}.")
+
+# Get initial values
+initial_files = set()
+for path in Path(output_dir).rglob("*"):
+    if path.is_file():
+        initial_files.add(str(path.name))
+
 enginx = EnginX(
     vanadium_run=vanadium_path,
     focus_runs=[focus_path],
@@ -29,5 +36,5 @@ enginx = EnginX(
 enginx.main(plot_cal=False, plot_foc=False)
 
 for path in Path(output_dir).rglob("*"):
-    if path.is_file():
+    if path.is_file() and str(path.name) not in initial_files:
         output.append(str(path.name))
