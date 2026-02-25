@@ -362,10 +362,27 @@ run_operation(dataset, "RoiNormalisationFilter", roi_settings)
 
 # Flat fielding
 flat_field_settings = {
-    "selected_flat_fielding": "Only Before",
     "use_dark": False
 }
-run_operation(dataset, "FlatFieldFilter", flat_field_settings)
+if dataset.flat_before is not None and dataset.flat_after is not None:
+    # Both
+    flat_field_settings["selected_flat_fielding"] = "Both, concatenated"
+    if dataset.dark_before is not None and dataset.dark_after is not None:
+        flat_field_settings["use_dark"] = True
+elif dataset.flat_before is not None:
+    # Just before
+    flat_field_settings["selected_flat_fielding"] = "Only Before"
+    if dataset.dark_before is not None:
+        flat_field_settings["use_dark"] = True
+elif dataset.flat_after is not None:
+    # Just after
+    flat_field_settings["selected_flat_fielding"] = "Only After"
+    if dataset.dark_after is not None:
+        flat_field_settings["use_dark"] = True
+
+if flat_field_settings != {"use_dark": False}:
+    run_operation(dataset, "FlatFieldFilter", flat_field_settings)
+
 
 # Cleanup
 apply_cleanup(dataset)
