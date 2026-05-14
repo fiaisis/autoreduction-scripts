@@ -5,6 +5,9 @@ from __future__ import annotations
 ngem = False
 recon = True
 output = ""
+runno = 112345
+dataset_path = Path("/home/ubuntu/large")
+ngem_path = "/ngem/nGEM-INES/DATA/IMAT_2026_01/IMAT00039031"
 
 if ngem:
     #######################################################
@@ -14,7 +17,6 @@ if ngem:
     import numpy as np
     from pathlib import Path
 
-    ngem_path = "/ngem/nGEM-INES/DATA/IMAT_2026_01/IMAT00039031"
     output_path = Path(ngem_path).parent
 
     print("Loading folder: %s", ngem_path)
@@ -75,10 +77,6 @@ elif recon:
                               'max_projection_angle': 360}
     DEBUG = False
     DEBUG_DIR = Path("/output/debug")
-
-    # To be edited by us for the script
-    runno = 112345
-    dataset_path = Path("/home/ubuntu/large")
 
     # Set the output dir
     output_dir = Path(f"/output/run-{runno}")
