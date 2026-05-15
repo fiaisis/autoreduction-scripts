@@ -1,6 +1,7 @@
 # Copyright (C) 2025 ISIS Rutherford Appleton Laboratory UKRI
 # SPDX - License - Identifier: GPL-3.0-or-later
 from __future__ import annotations
+from pathlib import Path
 
 ngem = False
 recon = True
@@ -15,7 +16,6 @@ if ngem:
     #######################################################
     from mantid.simpleapi import LoadNGEM, Rebin, MoveInstrumentComponent, SaveNexus
     import numpy as np
-    from pathlib import Path
 
     output_path = Path(ngem_path).parent
 
@@ -54,7 +54,6 @@ elif recon:
     # IMAT Reconstruction
     #######################################################
     import cv2
-    from pathlib import Path
     from typing import Any
 
     import numpy as np
