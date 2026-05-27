@@ -16,8 +16,7 @@ if ngem:
     #######################################################
     from mantid.simpleapi import LoadNGEM, Rebin, MoveInstrumentComponent, SaveNexus
     import numpy as np
-
-    output_path = Path(ngem_path).parent
+    import os
 
     print("Loading folder: %s", ngem_path)
 
@@ -45,7 +44,7 @@ if ngem:
 
     pos = ws.getInstrument().getComponentByName('source').getPos()
     MoveInstrumentComponent(ws, 'source', X=0, Y=0, Z=-(pos[2] + L))
-    SaveNexus(InputWorkspace="ws", Filename=str(output_path / filename))
+    SaveNexus(InputWorkspace="ws", Filename=os.path.join(output, filename))
     output = filename
 
 
