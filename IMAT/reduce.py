@@ -5,7 +5,8 @@ from pathlib import Path
 
 ngem = False
 recon = True
-output = "/output"
+output = ""
+output_path = "/output"
 runno = 112345
 dataset_path = Path("/home/ubuntu/large")
 ngem_path = "/ngem/nGEM-INES/DATA/IMAT_2026_01/IMAT00039031"
