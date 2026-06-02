@@ -3,6 +3,12 @@
 from __future__ import annotations
 from pathlib import Path
 
+# Stop multiprocessing warning from posting prints during tear down.
+import os
+import sys
+os.environ["PYTHONWARNINGS"] = "ignore::UserWarning:multiprocessing.resource_tracker"
+
+# Variables that need setting for nGEM and IMAT Recon
 ngem = False
 recon = True
 output = ""
