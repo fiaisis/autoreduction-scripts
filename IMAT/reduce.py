@@ -492,4 +492,4 @@ elif recon:
     dataset.add_recon(recon)
 
     save_stack(dataset.recons[0], output_dir)
-    output = output_dir
+    output = str(output_dir)
