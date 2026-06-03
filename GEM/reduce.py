@@ -3,8 +3,10 @@ from isis_powder.gem import Gem
 
 runno = "97486"
 mode = "Rietveld"  # PDF, Rietveld
-input_mode = "Summed"  # Summed, Individual
+input_mode = "Individual"  # Summed, Individual
 vanadium_runno = '97482'
+van_norm = True  # Set to False to skip vanadium normalisation step
+save_all = False  # Set to True to save all intermediate workspaces, False to only save final focused workspace
 
 calibration_dir = '/extras/gem/calibration_files'
 splined_vanadium_dir = '/extras/gem/splined_vanadium'
@@ -60,10 +62,13 @@ else:
 
 focused = gem.focus(
         run_number=runno,
+        unit_to_keep="dSpacing",
         mode=mode,
         input_mode=input_mode,
         keep_raw_workspace=False,
+        save_all=save_all,
         focused_cropping_values=focused_cropping_values,
+        vanadium_normalisation=van_norm,
 )
 
 # Collect output files
