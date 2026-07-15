@@ -1,3 +1,6 @@
+from mantid.simpleapi import *
+import matplotlib.pyplot as plt
+import numpy as np
 from pathlib import Path
 from isis_powder.gem import Gem
 
@@ -6,10 +9,7 @@ from isis_powder.gem import Gem
 ######
 
 # import mantid algorithms, numpy and matplotlib
-from mantid.simpleapi import *
-import matplotlib.pyplot as plt
-import numpy as np
-from os import path
+
 
 wsname= 'GEM00100655'
 Load(Filename=f'{wsname}.nxs', OutputWorkspace=wsname)
@@ -64,7 +64,8 @@ cross_cor = CrossCorrelate(InputWorkspace=ws_crop, ReferenceSpectra=ispec, XMin=
 offsets = GetDetectorOffsets(InputWorkspace=cross_cor, Step=dwidth, OffsetMode='Absolute',
                              MaxOffset=1, DReference=dobs, XMin=-200, XMax=200,
                              DIdeal=dpk,PeakFunction='Gaussian')  # GroupingFileName=noffsetfile,
-SaveCalFile(Filename=path.join(babylon_fpath, 'offsets_2026_cycle261_RWaite.cal'), OffsetsWorkspace=offsets)
+Filename = Path(babylon_fpath) / 'offsets_2026_cycle261_RWaite.cal'
+SaveCalFile(Filename, OffsetsWorkspace=offsets)
 
 # apply calibration to tof workspace
 ApplyDiffCal(InstrumentWorkspace=wsname, OffsetsWorkspace=offsets)
@@ -73,43 +74,11 @@ ws_cal_foc = DiffractionFocussing(InputWorkspace=ws_cal, OutputWorkspace=ws_cal.
                                   GroupingWorkspace='grp', PreserveEvents=False)
 # apply old calibrationApplyDiffCal(InstrumentWorkspace=wsname, OffsetsWorkspace=offsets)
 ApplyDiffCal(InstrumentWorkspace=wsname, ClearCalibration=True)
-ApplyDiffCal(InstrumentWorkspace=wsname, CalibrationFile=path.join(babylon_fpath, 'offsets_2023_cycle231.cal'))
+CalibrationFile = Path(babylon_fpath) / 'offsets_2023_cycle231.cal'
+ApplyDiffCal(InstrumentWorkspace=wsname, CalibrationFile=CalibrationFile)
 ws_cal_old = ConvertUnits(InputWorkspace=wsname, OutputWorkspace=wsname + "_old_cal", Target="dSpacing")
 ws_cal_old_foc = DiffractionFocussing(InputWorkspace=ws_cal_old, OutputWorkspace=ws_cal_old.name() + "_foc", 
                                   GroupingWorkspace='grp', PreserveEvents=False)
-
-                
-######
-# plots
-######
-
-dpks = [1.1085, 1.2459, 1.3577, 1.6374, 1.9201, 3.1355] 
-fig, axes = plt.subplots(1,2 , sharex=True, sharey=True, subplot_kw={'projection': 'mantid'})
-fig.set_figwidth(1.5*fig.get_figwidth())
-for iax, ws in enumerate([ws_uncal, ws_cal]):
-    cfill = axes[iax].imshow(ws, aspect='auto', cmap='viridis', distribution=False, interpolation='none', label='_child0', origin='lower')
-    # cfill.set_norm(plt.Normalize(vmax=0.8*ws_cal.extractY().max()))
-    axes[iax].set_title(ws.name())
-    for d in dpks:
-        axes[iax].axvline(d, color=3*[0.7], ls='--', alpha=0.5)
-axes[0].set_xlabel('d-Spacing ($\\AA$)')
-axes[0].set_ylabel('Spectrum')
-axes[0].set_xlim([1.5 , 3.4])
-fig.show()
-
-
-# plot individual banks
-ibank = 2
-fig, axes = plt.subplots(subplot_kw={'projection': 'mantid'})
-fig.set_figwidth(1.5*fig.get_figwidth())
-for ws in [ws_uncal_foc, ws_cal_foc, ws_cal_old_foc]:
-    axes.plot(ws,  wkspIndex=ibank)
-for d in dpks:
-    axes.axvline(d, color =3*[0.7], ls='--')
-axes.set_xlim([1.5, 3.35])
-legend = axes.legend(fontsize=8.0).set_draggable(True).legend
-axes.set_title(f"bank{ibank+1}")
-fig.show()
 
 
 ######
