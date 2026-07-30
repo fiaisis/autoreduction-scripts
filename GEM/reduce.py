@@ -10,6 +10,8 @@ from mantid.simpleapi import (
     GetDetectorOffsets,
     SaveCalFile,
     ApplyDiffCal,
+    IkedaCarpenterPV,
+    FlatBackground,
 )
 import numpy as np
 from pathlib import Path
