@@ -21,7 +21,7 @@ from isis_powder.gem import Gem
 # GEM calibration
 ######
 
-# import mantid algorithms, numpy and matplotlib
+# import mantid algorithms, numpy
 
 
 wsname = "GEM00100655"
@@ -169,13 +169,21 @@ vanadium_runno = "97482"
 van_norm = True  # Set to False to skip vanadium normalisation step
 save_all = False  # Set to True to save all intermediate workspaces, False to only save final focused workspace
 
-config_file = "/extras/gem/Gem_config_example_25_3.yaml"
-output_dir = Path("/output")
+config_file = "/extras/gem/Gem_config_example_25_3.yaml" #not sure if this is needed?
+cwd = Path.cwd()
 output = []
 
 gem = Gem(
+    calibration_directory=cwd, #find the calibration directory in the current working directory
+    output_directory=cwd, #output files into the current working directory
     user_name="Autoreduction",
-    config_file=config_file,
+    config_file=config_file
+)
+
+cal_mapping_file = Path(cwd) / "calibration_mapping.yaml" #We need to create this file
+
+gem.create_cal(run_number=runno,
+               calibration_mapping_file=cal_mapping_file
 )
 
 # Vanadium only
@@ -233,7 +241,7 @@ focused = gem.focus(
 )
 
 # Collect output files
-output_path = Path(output_dir)
+output_path = Path(cwd)
 for path in output_path.rglob("*"):
     if path.is_file():
         output.append(str(path.name))
