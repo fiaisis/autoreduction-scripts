@@ -1,19 +1,4 @@
-from mantid.simpleapi import (
-    Load,
-    ExtractMonitors,
-    ConvertUnits,
-    CreateGroupingWorkspace,
-    DiffractionFocussing,
-    Rebin,
-    Fit,
-    CrossCorrelate,
-    GetDetectorOffsets,
-    SaveCalFile,
-    ApplyDiffCal,
-    IkedaCarpenterPV,
-    FlatBackground,
-    SaveNexus,
-)
+from mantid.simpleapi import SaveNexus
 import numpy as np
 from pathlib import Path
 from isis_powder.gem import Gem
@@ -104,7 +89,7 @@ focused = gem.focus(
     focused_cropping_values=focused_cropping_values,
 )
 
-focused.SaveNexus(f"{cwd}/focused_{runno}.nxs")
+SaveNexus(focused, f"{cwd}/focused_{runno}.nxs")
 
 # Collect output files
 output_path = Path(cwd)
