@@ -18,150 +18,6 @@ import numpy as np
 from pathlib import Path
 from isis_powder.gem import Gem
 
-######
-# GEM calibration
-######
-
-# import mantid algorithms, numpy
-
-
-wsname = "GEM00100655"
-Load(Filename=f"{wsname}.nxs", OutputWorkspace=wsname)
-ExtractMonitors(
-    InputWorkspace=wsname, DetectorWorkspace=wsname, MonitorWorkspace=f"{wsname}_mon"
-)
-
-# convert the original workspace to d
-ws_uncal = ConvertUnits(
-    InputWorkspace=wsname, OutputWorkspace=wsname + "_uncal", Target="dSpacing"
-)
-
-# save the uncalibrated TOF workspace for later
-grp = CreateGroupingWorkspace(
-    InputWorkspace=ws_uncal, GroupDetectorsBy="bank", OutputWorkspace="grp"
-)
-ws_uncal_foc = DiffractionFocussing(
-    InputWorkspace=ws_uncal,
-    OutputWorkspace=ws_uncal.name() + "_foc",
-    GroupingWorkspace="grp",
-    PreserveEvents=False,
-)
-
-
-######
-# Get reference curve and d-spacing
-######
-
-dpk = 1.6374  # 311 silicon
-dmin, dwidth, dmax = 1.4, 0.002, 1.7
-# dpk = 1.9201
-# dmin, dwidth, dmax = 1.75, 0.002, 2.05
-ws_crop = Rebin(
-    InputWorkspace=ws_uncal,
-    OutputWorkspace=f"{ws_uncal.name()}_crop",
-    Params=f"{dmin},{dwidth},{dmax}",
-)
-
-# fit to get observed d-sapcing
-ispec = 6000  # 1800 # 3000
-imax = np.argmax(ws_crop.readY(ispec))
-xmax = ws_crop.readX(ispec)[imax]
-func = IkedaCarpenterPV(I=1000, X0=xmax) + FlatBackground(A0=0)
-func.function.setMatrixWorkspace(ws_crop, ispec, 0.0, 0.0)  # calculate A,B etc.
-func.freeAll()
-[
-    func.fix(f"f0.{par}")
-    for par in ("Alpha0", "Alpha1", "Beta0", "Kappa", "SigmaSquared", "Gamma")
-]
-res = Fit(
-    Function=func,
-    InputWorkspace=ws_crop,
-    Output=ws_crop.name(),
-    OutputCompositeMembers=True,
-    ConvolveMembers=True,
-    WorkspaceIndex=ispec,
-    Normalise=True,
-)
-func = res.Function
-[func.free(f"f0.{par}") for par in ("SigmaSquared", "Gamma")]
-res = Fit(
-    Function=func,
-    InputWorkspace=ws_crop,
-    Output=ws_crop.name(),
-    OutputCompositeMembers=True,
-    ConvolveMembers=True,
-    WorkspaceIndex=ispec,
-    Normalise=True,
-)
-func = res.Function
-[func.free(f"f0.{par}") for par in ("Alpha0", "Alpha1", "Beta0")]
-res = Fit(
-    Function=func,
-    InputWorkspace=ws_crop,
-    Output=ws_crop.name(),
-    OutputCompositeMembers=True,
-    ConvolveMembers=True,
-    WorkspaceIndex=ispec,
-    Normalise=True,
-)
-dobs = res.Function.getFunction(0).getParameterValue("X0")
-
-
-######
-# perform calibration
-######
-babylon_fpath = r"\\olympic\Babylon5\Public\RWaite"
-cross_cor = CrossCorrelate(
-    InputWorkspace=ws_crop,
-    ReferenceSpectra=ispec,
-    XMin=dmin,
-    XMax=dmax,
-    WorkspaceIndexMin=0,
-    WorkspaceIndexMax=ws_crop.getNumberHistograms() - 1,
-)
-offsets = GetDetectorOffsets(
-    InputWorkspace=cross_cor,
-    Step=dwidth,
-    OffsetMode="Absolute",
-    MaxOffset=1,
-    DReference=dobs,
-    XMin=-200,
-    XMax=200,
-    DIdeal=dpk,
-    PeakFunction="Gaussian",
-)  # GroupingFileName=noffsetfile,
-Filename = Path(babylon_fpath) / "offsets_2026_cycle261_RWaite.cal"
-SaveCalFile(Filename, OffsetsWorkspace=offsets)
-
-# apply calibration to tof workspace
-ApplyDiffCal(InstrumentWorkspace=wsname, OffsetsWorkspace=offsets)
-ws_cal = ConvertUnits(
-    InputWorkspace=wsname, OutputWorkspace=wsname + "_cal", Target="dSpacing"
-)
-ws_cal_foc = DiffractionFocussing(
-    InputWorkspace=ws_cal,
-    OutputWorkspace=ws_cal.name() + "_foc",
-    GroupingWorkspace="grp",
-    PreserveEvents=False,
-)
-# apply old calibrationApplyDiffCal(InstrumentWorkspace=wsname, OffsetsWorkspace=offsets)
-ApplyDiffCal(InstrumentWorkspace=wsname, ClearCalibration=True)
-CalibrationFile = Path(babylon_fpath) / "offsets_2023_cycle231.cal"
-ApplyDiffCal(InstrumentWorkspace=wsname, CalibrationFile=CalibrationFile)
-ws_cal_old = ConvertUnits(
-    InputWorkspace=wsname, OutputWorkspace=wsname + "_old_cal", Target="dSpacing"
-)
-ws_cal_old_foc = DiffractionFocussing(
-    InputWorkspace=ws_cal_old,
-    OutputWorkspace=ws_cal_old.name() + "_foc",
-    GroupingWorkspace="grp",
-    PreserveEvents=False,
-)
-
-SaveCalFile(Filename, OffsetsWorkspace=offsets)
-SaveNexus(InputWorkspace=ws_uncal_foc, Filename=f"{ws_uncal_foc.name()}.nxs")
-SaveNexus(InputWorkspace=ws_cal_foc, Filename=f"{ws_cal_foc.name()}.nxs")
-SaveNexus(InputWorkspace=ws_cal_old_foc, Filename=f"{ws_cal_old_foc.name()}.nxs")
 
 ######
 # autoreduction
@@ -178,17 +34,17 @@ multiple_scattering = False  # Indicates whether to account for the effects of m
                             # absorption corrections. If do_absorb_corrections is set to True this parameter must be set.
 
 config_file = "/extras/gem/Gem_config_example_25_3.yaml"
+cal_mapping_file = Path(cwd) / "calibration_mapping.yaml" #We need to create this file
 cwd = Path.cwd()
 output = []
 
 gem = Gem(
+    calibration_to_adjust=cal_mapping_file,
     calibration_directory=cwd, #find the calibration directory in the current working directory
     output_directory=cwd, #output files into the current working directory
     user_name="Autoreduction",
     config_file=config_file
 )
-
-cal_mapping_file = Path(cwd) / "calibration_mapping.yaml" #We need to create this file
 
 gem.create_cal(run_number=runno,
                calibration_mapping_file=cal_mapping_file
@@ -247,6 +103,8 @@ focused = gem.focus(
     save_all=save_all,
     focused_cropping_values=focused_cropping_values,
 )
+
+focused.SaveNexus(f"{cwd}/focused_{runno}.nxs")
 
 # Collect output files
 output_path = Path(cwd)
