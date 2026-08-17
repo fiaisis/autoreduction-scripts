@@ -13,7 +13,7 @@ mode = "Rietveld"  # PDF, Rietveld
 input_mode = "Individual"  # Summed, Individual
 vanadium_runno = "97482"
 van_norm = True  # Set to False to skip vanadium normalisation step
-save_all = False  # Set to True to save all intermediate workspaces, False to only save final focused workspace
+save_all = True  # Set to True to save all intermediate workspaces, False to only save final focused workspace
 do_absorb_corrections = False  # Set to False to skip absorption corrections
 multiple_scattering = False  # Indicates whether to account for the effects of multiple scattering when calculating 
                             # absorption corrections. If do_absorb_corrections is set to True this parameter must be set.
