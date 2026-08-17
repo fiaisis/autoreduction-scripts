@@ -12,6 +12,7 @@ from mantid.simpleapi import (
     ApplyDiffCal,
     IkedaCarpenterPV,
     FlatBackground,
+    SaveNexus,
 )
 import numpy as np
 from pathlib import Path
@@ -157,6 +158,10 @@ ws_cal_old_foc = DiffractionFocussing(
     PreserveEvents=False,
 )
 
+SaveCalFile(Filename, OffsetsWorkspace=offsets)
+SaveNexus(InputWorkspace=ws_uncal_foc, Filename=f"{ws_uncal_foc.name()}.nxs")
+SaveNexus(InputWorkspace=ws_cal_foc, Filename=f"{ws_cal_foc.name()}.nxs")
+SaveNexus(InputWorkspace=ws_cal_old_foc, Filename=f"{ws_cal_old_foc.name()}.nxs")
 
 ######
 # autoreduction
@@ -168,8 +173,11 @@ input_mode = "Individual"  # Summed, Individual
 vanadium_runno = "97482"
 van_norm = True  # Set to False to skip vanadium normalisation step
 save_all = False  # Set to True to save all intermediate workspaces, False to only save final focused workspace
+do_absorb_corrections = False  # Set to False to skip absorption corrections
+multiple_scattering = False  # Indicates whether to account for the effects of multiple scattering when calculating 
+                            # absorption corrections. If do_absorb_corrections is set to True this parameter must be set.
 
-config_file = "/extras/gem/Gem_config_example_25_3.yaml" #not sure if this is needed?
+config_file = "/extras/gem/Gem_config_example_25_3.yaml"
 cwd = Path.cwd()
 output = []
 
@@ -191,18 +199,16 @@ gem.create_cal(run_number=runno,
 # If they exist, create_vanadium is a no-op effectively.
 # If you pre-compute vanadium and store in /extras/gem/,
 # you can remove this block entirely.
-try:
-    gem.create_vanadium(
-        first_cycle_run_no=vanadium_runno,
-        mode=mode,
-        do_absorb_corrections=True,
-        multiple_scattering=False,
-        spline_coefficient=120,
-    )
-    print("Vanadium created successfully")
-except Exception as e:
-    print(f"Error occurred while creating vanadium: {e}")
-    print("Attempting to continue with existing vanadium file if available")
+
+gem.create_vanadium(
+    first_cycle_run_no=vanadium_runno,
+    mode=mode,
+    do_absorb_corrections=do_absorb_corrections,
+    multiple_scattering=multiple_scattering,
+    spline_coefficient=120,
+    #texture_mode=True
+)
+
 
 # Focus
 print(f"Starting focus for run {runno} with mode {mode} and input mode {input_mode}")
@@ -230,14 +236,16 @@ else:
     raise ValueError(f"Invalid mode: {mode}. Expected 'PDF' or 'Rietveld'.")
 
 focused = gem.focus(
-    run_number=runno,
-    unit_to_keep="dSpacing",
-    mode=mode,
+    calibration_mapping_file=cal_mapping_file,
+    do_absorb_corrections=do_absorb_corrections,
     input_mode=input_mode,
+    mode=mode,
+    run_number=runno,
+    vanadium_normalisation=van_norm,
+    unit_to_keep="dSpacing",
     keep_raw_workspace=False,
     save_all=save_all,
     focused_cropping_values=focused_cropping_values,
-    vanadium_normalisation=van_norm,
 )
 
 # Collect output files
