@@ -19,8 +19,10 @@ multiple_scattering = False  # Indicates whether to account for the effects of m
                             # absorption corrections. If do_absorb_corrections is set to True this parameter must be set.
 
 config_file = "/extras/gem/Gem_config_example_25_3.yaml"
-cal_mapping_file = Path(cwd) / "calibration_mapping.yaml" #We need to create this file
+cal_mapping_file = "calibration_mapping.yaml" #We need to create this file
 cwd = Path.cwd()
+cal_mapping_file_path = Path(cwd) / cal_mapping_file
+
 output = []
 
 gem = Gem(
@@ -42,7 +44,7 @@ gem.create_cal(run_number=runno,
 # you can remove this block entirely.
 
 gem.create_vanadium(
-    first_cycle_run_no=vanadium_runno,
+    calibration_mapping_file=cal_mapping_file,
     mode=mode,
     do_absorb_corrections=do_absorb_corrections,
     multiple_scattering=multiple_scattering,
