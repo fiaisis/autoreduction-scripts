@@ -8,8 +8,23 @@ from isis_powder.gem import Gem
 # autoreduction
 ######
 
+config_file = "/extras/gem/Gem_config_example_25_3.yaml"
+
+def pull_vars_from_config(config_file):
+    with open(config_file, 'r') as f:
+        for line in f:
+            if line.startswith("mode"):
+                mode = line.split(":")[1].strip()
+            elif line.startswith("vanadium_normalisation"):
+                van_norm = line.split(":")[1].strip().lower()
+            elif line.startswith("do_absorb_corrections"):
+                do_absorb_corrections = line.split(":")[1].strip().lower()
+            elif line.startswith("multiple_scattering"):
+                multiple_scattering = line.split(":")[1].strip().lower()
+    return mode, van_norm, do_absorb_corrections, multiple_scattering
+
 runno = "97486"
-mode = "Rietveld"  # PDF, Rietveld
+mode, van_norm, do_absorb_corrections, multiple_scattering = pull_vars_from_config(config_file)
 input_mode = "Individual"  # Summed, Individual
 vanadium_runno = "97482"
 van_norm = True  # Set to False to skip vanadium normalisation step
@@ -18,12 +33,11 @@ do_absorb_corrections = False  # Set to False to skip absorption corrections
 multiple_scattering = False  # Indicates whether to account for the effects of multiple scattering when calculating 
                             # absorption corrections. If do_absorb_corrections is set to True this parameter must be set.
 
-config_file = "/extras/gem/Gem_config_example_25_3.yaml"
 cal_mapping_file = "calibration_mapping.yaml" #We need to create this file
 cwd = Path.cwd()
 cal_mapping_file_path = Path(cwd) / cal_mapping_file
 
-output = []
+output = "/output"
 
 gem = Gem(
     calibration_to_adjust=cal_mapping_file,
@@ -78,7 +92,7 @@ elif mode == "PDF":
 else:
     raise ValueError(f"Invalid mode: {mode}. Expected 'PDF' or 'Rietveld'.")
 
-focused = gem.focus(
+gem.focus(
     calibration_mapping_file=cal_mapping_file,
     do_absorb_corrections=do_absorb_corrections,
     input_mode=input_mode,
@@ -90,14 +104,5 @@ focused = gem.focus(
     save_all=save_all,
     focused_cropping_values=focused_cropping_values,
 )
-
-SaveNexus(focused, f"{cwd}/focused_{runno}.nxs")
-
-# Collect output files
-output_path = Path(cwd)
-for path in output_path.rglob("*"):
-    if path.is_file():
-        output.append(str(path.name))
-        print(f"Output file: {path.name}")
 
 print(f"Reduction completed for run {runno}. Output files: {output}")
