@@ -62,7 +62,7 @@ gem.create_vanadium(
     do_absorb_corrections=do_absorb_corrections,
     multiple_scattering=multiple_scattering,
     spline_coefficient=120,
-    #texture_mode=True
+    texture_mode=False
 )
 
 
