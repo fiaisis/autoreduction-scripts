@@ -26,11 +26,10 @@ def pull_vars_from_config(config_file):
 runno = "97486"
 mode, van_norm, do_absorb_corrections, multiple_scattering = pull_vars_from_config(config_file)
 input_mode = "Individual"  # Summed, Individual
-vanadium_runno = "97482"
 van_norm = True  # Set to False to skip vanadium normalisation step
 save_all = True  # Set to True to save all intermediate workspaces, False to only save final focused workspace
-do_absorb_corrections = False  # Set to False to skip absorption corrections
-multiple_scattering = False  # Indicates whether to account for the effects of multiple scattering when calculating 
+do_absorb_corrections = True  # Set to False to skip absorption corrections
+multiple_scattering = True  # Indicates whether to account for the effects of multiple scattering when calculating 
                             # absorption corrections. If do_absorb_corrections is set to True this parameter must be set.
 
 cal_mapping_file = "calibration_mapping.yaml" #We need to create this file
