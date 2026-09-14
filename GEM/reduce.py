@@ -1,10 +1,22 @@
 from pathlib import Path
 from isis_powder.gem import Gem
+import os
+import yaml
 
 
 ######
 # autoreduction
 ######
+cycle = "cycle_25_3"
+offset_file = "offsets_2023_cycle231.cal"
+rietveldvanrunnumbers = "96663"
+rietveldemptyrunnumbers = "96664"
+pdfvanrunnumbers = "97483"
+pdfemptyrunnumbers = "97484"
+rietveldpdfvanemptyrunnumbers = {"Rietveld": {"vanadium_run_numbers": f"{rietveldvanrunnumbers}",
+                                              "empty_run_numbers": f"{rietveldemptyrunnumbers}"},
+                                 "PDF": {"vanadium_run_numbers": f"{pdfvanrunnumbers}",
+                                         "empty_run_numbers": f"{pdfemptyrunnumbers}"}}
 
 runno = "97486"
 # Set the mode for reduction
@@ -21,16 +33,41 @@ input_mode = "Individual"
 # Set to True to save all intermediate workspaces, False to only save final focused workspace
 save_all = True
 
-cal_mapping_file = "calibration_mapping.yaml"
-cwd = Path.cwd()
-cal_mapping_file_path = Path(cwd) / cal_mapping_file
+mapping_file_data = {
+    f"{runno - 1}-{runno}": {"label": f"{cycle}", "offset_file_name": f"{offset_file}",
+                             "Rietveld": {"vanadium_run_numbers": f"{rietveldvanrunnumbers}",
+                                    "empty_run_numbers": f"{rietveldemptyrunnumbers}"},
+                              "PDF": {"vanadium_run_numbers": f"{pdfvanrunnumbers}",
+                                    "empty_run_numbers": f"{pdfemptyrunnumbers}"}}
+}
+
+def create_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
+calibration_directory = Path("Calibrations")
+create_directory(calibration_directory)
+cal_mapping_file_path = cycle / cal_mapping_file
 
 output = "/output"
+create_directory(Path(cycle))
+
+def generate_mapping_file(cal_mapping_file_path, mapping_file_data):
+    if not os.path.exists(cal_mapping_file_path):
+        os.makedirs(os.path.dirname(cal_mapping_file_path), exist_ok=True)
+    try:
+        with open(cal_mapping_file_path, 'w') as f:
+            yaml.safe_dump(mapping_file_data, f)
+    except Exception as e:
+        print(f"Error occurred while generating mapping file: {e}")
+
+generate_mapping_file(cal_mapping_file_path, mapping_file_data)
 
 gem = Gem(
     calibration_to_adjust=cal_mapping_file,
-    calibration_directory=cwd, #find the calibration directory in the current working directory
-    output_directory=cwd, #output files into the current working directory
+    calibration_directory=calibration_directory,
+    output_directory=output,
     user_name="Autoreduction",
 )
 
