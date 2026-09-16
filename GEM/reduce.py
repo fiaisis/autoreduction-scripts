@@ -67,8 +67,6 @@ print(f"Generating mapping file {cal_mapping_file}")
 generate_mapping_file(cal_mapping_file_path, mapping_file_data)
 
 
-
-
 output = "/output"
 
 gem = Gem(
