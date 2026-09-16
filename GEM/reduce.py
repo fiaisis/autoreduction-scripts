@@ -67,8 +67,6 @@ print(f"Generating mapping file {cal_mapping_file}")
 generate_mapping_file(cal_mapping_file_path, mapping_file_data)
 
 
-#cal_mapping_file = r"C:\Users\yyf77781\Documents\mantid_scripts\Calibrations\Gem_Mapping_25_3.yaml"
-#config_file = r"C:\Users\yyf77781\Documents\mantid_scripts\Calibrations\Gem_config_example_25_3.yaml"
 
 
 output = "/output"
