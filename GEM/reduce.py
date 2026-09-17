@@ -43,12 +43,19 @@ mapping_file_data = {
                                     "empty_run_numbers": f"{pdfemptyrunnumbers}"}}
 }
 
+def generate_path(path: Path):
+    if path.exists:
+        print(f"Path {path} already exists")
+        return
+    else:
+        return path.mkdir(parents=True)
+
         
 cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
 calibration_directory = Path(r"/extras/gem/Calibrations")
 cal_cycle_path = Path(calibration_directory, cycle)
 print(f"creating dir {cal_cycle_path}")
-Path.mkdir(cal_cycle_path, exist_ok=True)
+generate_path(cal_cycle_path)
 print(f"Moving {offset_file} into {cal_cycle_path}")
 shutil.copy(offset_file_base_path, cal_cycle_path)
 
