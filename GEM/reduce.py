@@ -45,7 +45,7 @@ mapping_file_data = {
 
         
 cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
-calibration_directory = Path(r"extras/gem/Calibrations")
+calibration_directory = Path(r"/extras/gem/Calibrations")
 cal_cycle_path = Path(calibration_directory, cycle)
 print(f"creating dir {cal_cycle_path}")
 Path.mkdir(cal_cycle_path, exist_ok=True)
