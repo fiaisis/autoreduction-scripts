@@ -28,7 +28,7 @@ cycle = "cycle_25_1"
 
 
 offset_file = "offsets_2023_cycle231.cal"
-offset_file_base_path = Path("extras/gem/{offset_file}")
+offset_file_base_path = Path("/extras/gem/{offset_file}")
 rietveldvanrunnumbers = "96663"
 rietveldemptyrunnumbers = "96664"
 pdfvanrunnumbers = "97483"
