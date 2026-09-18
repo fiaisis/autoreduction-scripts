@@ -44,11 +44,7 @@ mapping_file_data = {
 }
 
 def generate_path(path: Path):
-    if path.exists:
-        print(f"Path {path} already exists")
-        return
-    else:
-        return path.mkdir(parents=True)
+    return path.mkdir(parents=True, exist_ok=True)
 
         
 cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
