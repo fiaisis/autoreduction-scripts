@@ -48,7 +48,7 @@ cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
 calibration_directory = Path(r"/extras/gem/Calibrations")
 cal_cycle_path = Path(calibration_directory, cycle)
 print(f"creating dir {cal_cycle_path}")
-Path.mkdir(cal_cycle_path, exist_ok=True)
+cal_cycle_path.mkdir(parents=True, exist_ok=True)
 print(f"Moving {offset_file} into {cal_cycle_path}")
 shutil.copy(offset_file_base_path, cal_cycle_path)
 
