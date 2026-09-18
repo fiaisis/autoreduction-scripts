@@ -28,7 +28,7 @@ cycle = "cycle_25_1"
 
 
 offset_file = "offsets_2023_cycle231.cal"
-offset_file_base_path = Path("/extras/gem/{offset_file}")
+offset_file_base_path = Path("/gem/{offset_file}")
 rietveldvanrunnumbers = "96663"
 rietveldemptyrunnumbers = "96664"
 pdfvanrunnumbers = "97483"
@@ -45,7 +45,7 @@ mapping_file_data = {
 
         
 cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
-calibration_directory = Path(r"/extras/gem/Calibrations")
+calibration_directory = Path(r"/gem/Calibrations")
 cal_cycle_path = Path(calibration_directory, cycle)
 print(f"creating dir {cal_cycle_path}")
 cal_cycle_path.mkdir(parents=True, exist_ok=True)
