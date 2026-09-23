@@ -26,6 +26,7 @@ save_all = True
 
 cycle = "cycle_26_1"
 
+output = f"GEM{runno}.nxs"
 
 offset_file = "offsets_2023_cycle231.cal"
 offset_file_base_path = Path(f"/extras/gem/{offset_file}")
@@ -71,8 +72,6 @@ def generate_mapping_file(cal_mapping_file_path, mapping_file_data):
 print(f"Generating mapping file {cal_mapping_file}")
 generate_mapping_file(cal_mapping_file_path, mapping_file_data)
 
-
-output = f"GEM{runno}.nxs"
 
 gem = Gem(
     calibration_directory=calibration_directory,
