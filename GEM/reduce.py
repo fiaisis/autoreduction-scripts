@@ -9,7 +9,7 @@ import yaml
 # autoreduction
 ######
 
-runno = "96789"
+runno = "102137"
 # Set the mode for reduction
 mode = "Rietveld"
 # Set to False to skip vanadium normalisation step
@@ -24,15 +24,15 @@ input_mode = "Individual"
 # Set to True to save all intermediate workspaces, False to only save final focused workspace
 save_all = True
 
-cycle = "cycle_25_1"
+cycle = "cycle_26_1"
 
 
 offset_file = "offsets_2023_cycle231.cal"
-offset_file_base_path = Path("/gem/{offset_file}")
-rietveldvanrunnumbers = "96663"
-rietveldemptyrunnumbers = "96664"
-pdfvanrunnumbers = "97483"
-pdfemptyrunnumbers = "97484"
+offset_file_base_path = Path(f"/extras/gem/{offset_file}")
+rietveldvanrunnumbers = 96663
+rietveldemptyrunnumbers = 96664
+pdfvanrunnumbers = 97483
+pdfemptyrunnumbers = 97484
 first_cycle_run_no=int(runno) - 1
 
 mapping_file_data = {
@@ -45,12 +45,17 @@ mapping_file_data = {
 
         
 cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
+grouping_file = "GEM_Instrument_grouping.cal"
+grouping_file_base_path = f"extras/gem/{grouping_file}"
+
 calibration_directory = Path(r"/gem/Calibrations")
 cal_cycle_path = Path(calibration_directory, cycle)
 print(f"creating dir {cal_cycle_path}")
 cal_cycle_path.mkdir(parents=True, exist_ok=True)
 print(f"Moving {offset_file} into {cal_cycle_path}")
 shutil.copy(offset_file_base_path, cal_cycle_path)
+print(f"Moving {grouping_file} into {calibration_directory}")
+shutil.copy(grouping_file_base_path, calibration_directory)
 
 cal_mapping_file_path = Path(calibration_directory, cal_mapping_file)
 offset_file_path = Path(calibration_directory, offset_file)
@@ -67,11 +72,11 @@ print(f"Generating mapping file {cal_mapping_file}")
 generate_mapping_file(cal_mapping_file_path, mapping_file_data)
 
 
-output = "/output"
+output = f"GEM{runno}.nxs"
 
 gem = Gem(
     calibration_directory=calibration_directory,
-    output_directory=output,
+    output_directory=Path("/output"),
     user_name="Autoreduction",
     mode = mode,
     vanadium_normalisation=van_norm,
@@ -87,10 +92,10 @@ gem = Gem(
 # If you pre-compute vanadium and store in /extras/gem/,
 # you can remove this block entirely.
 
-#sample_details = SampleDetails(height=4.0, radius=0.2985, center=[0, 0, 0], shape='cylinder')
-#sample_details.set_material(chemical_formula='Si', packing_fraction=0.6)
-#sample_details.set_container(radius=0.3175, chemical_formula='V')
-#gem.set_sample_details(sample=sample_details)
+sample_details = SampleDetails(height=4.0, radius=0.2985, center=[0, 0, 0], shape='cylinder')
+sample_details.set_material(chemical_formula='Si', packing_fraction=0.6)
+sample_details.set_container(radius=0.3175, chemical_formula='V')
+gem.set_sample_details(sample=sample_details)
 
 gem.create_vanadium(
     first_cycle_run_no=first_cycle_run_no,
