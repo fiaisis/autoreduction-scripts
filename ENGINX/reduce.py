@@ -2,8 +2,9 @@ from pathlib import Path
 
 from mantid.simpleapi import *
 from Engineering.EnginX import EnginX
-from Engineering.EnggUtils import GROUP
+from Engineering.common.instrument_config import get_instr_config
 
+GROUP = get_instr_config("ENGINX").group
 
 # Values changed by rundetection
 vanadium_path = "some path"
