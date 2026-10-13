@@ -60,6 +60,8 @@ elif recon:
     # IMAT Reconstruction
     #######################################################
     import cv2
+    import os
+    from pathlib import Path
     from typing import Any
 
     import numpy as np
@@ -406,7 +408,12 @@ elif recon:
 
 
     print(f"Mantid Imaging {version()}")
-
+    dataset_path_obj = Path(dataset_path)
+    file_count = sum(1 for item in dataset_path_obj.iterdir() if item.is_file())
+    siblings = [item.name for item in dataset_path_obj.parent.iterdir() if item != dataset_path_obj]
+    size_mb = sum(file.stat().st_size for file in dataset_path_obj.rglob('*') if file.is_file()) / 1024**2
+    print(f"Loading {dataset_path_obj.name} ({file_count} files, {size_mb:.2f} MB)...")
+    print(f"Alongside path: {', '.join(siblings)}")
     dataset = load_dataset(dataset_path)
 
     # ROI norm
