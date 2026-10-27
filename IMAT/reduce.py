@@ -46,8 +46,8 @@ if ngem:
     print("Saving:", filename)
 
     file_list = get_file_list(ngem_path)
-    ws = LoadNGEM(Filename=file_list, Binwidth=bin_width / 2)
-    ws = Rebin(ws, f"{start_tof},{bin_width},{end_tof}", PreserveEvents=False)
+    # Rebin as we load for speed
+    ws = LoadNGEM(Filename=file_list, BinWidth=bin_width, MinToF=start_tof, MaxToF=end_tof, PreserveEvents=False)
 
     pos = ws.getInstrument().getComponentByName('source').getPos()
     MoveInstrumentComponent(ws, 'source', X=0, Y=0, Z=-(pos[2] + L))
