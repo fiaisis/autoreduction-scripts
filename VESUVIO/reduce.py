@@ -1,6 +1,6 @@
 import requests
 from mantid.simpleapi import LoadVesuvio, CropWorkspace, Minus, Rebin, ISISIndirectDiffractionReduction, SaveNexusProcessed, EditInstrumentGeometry, ConvertUnits
-from mantid import config
+from mantid import config, mtd
 import time
 import re
 
@@ -148,7 +148,20 @@ ISISIndirectDiffractionReduction(InputFiles=normalized_runno,
                              SumFiles=True,
                              SpectraRange=back_scattering_spectra_range)
 diffraction_output = "vesuvio" + run_prefix + "_diffspec_red"
-SaveNexusProcessed(InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs")
+if diffraction_output in mtd:
+    SaveNexusProcessed(InputWorkspace=diffraction_output, Filename=f"{diffraction_output}.nxs")
+else:
+    # Attempt to save a multi-input diffspec
+    multi_diffraction_output = "vesuvio" + runno + "_multi_diffspec_red"
+    if multi_diffraction_output not in mtd.getObjectNames():
+        # Find the diffspec output
+        
+        for ws in mtd.getObjectNames():
+            if "diffspec_red" in ws and run_prefix in ws:
+                multi_diffraction_output = ws
+                print(f"Diffspec save fallback found {ws}")
+                break
+    SaveNexusProcessed(InputWorkspace=multi_diffraction_output, Filename=f"{diffraction_output}.nxs")
 output.append(f"{diffraction_output}.nxs")
 
 # Run VesuvioTransmission
