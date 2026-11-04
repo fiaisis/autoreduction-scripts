@@ -94,7 +94,10 @@ script change complete:
 
 ## Issues, branches, commits & pull requests
 
-- **Issues**: Use the org-wide default template from `fiaisis/.github`:
+- **Issues**: Do **not** create a new issue on your own (e.g. just to have a number to put in a PR's
+  `Closes #` line) unless the user explicitly asks you to create one. If no existing issue number is
+  evident, ask the user what issue or epic reference to put in the PR description instead. When the
+  user *does* ask you to create an issue, use the org-wide default template from `fiaisis/.github`:
   ```shell
   gh issue create --template Issue
   ```
@@ -107,7 +110,9 @@ script change complete:
      `ghcr.io/fiaisis/mantid-imaging` container (and verify compatibility with the instrument's
      transform in `../FIA-API`).
   2. Use a clear sentence-case PR title and the org-wide default PR template from `fiaisis/.github`
-     (`Closes # <Issue Number>` + `## Description`; ask the user if no issue number is evident).
+     (`Closes # <Issue Number>` + `## Description`). If no existing issue number is evident, ask the
+     user what issue or epic line to use (do **not** create an issue that doesn't exist just to link
+     it).
   3. Attach an AI-assistance label to the PR (`gh label list` to check existing labels, or create
      `AI` via `gh label create "AI" --description "Created with the assistance of AI"`).
 
