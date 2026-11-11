@@ -49,7 +49,7 @@ cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
 grouping_file = "GEM_Instrument_grouping.cal"
 grouping_file_base_path = f"extras/gem/{grouping_file}"
 
-calibration_directory = Path(r"/gem/Calibrations")
+calibration_directory = Path(r"extras/gem/Calibrations")
 cal_cycle_path = Path(calibration_directory, cycle)
 print(f"creating dir {cal_cycle_path}")
 cal_cycle_path.mkdir(parents=True, exist_ok=True)
@@ -82,7 +82,6 @@ gem = Gem(
     do_absorb_corrections=do_absorb_corrections,
     input_mode=input_mode,
     save_all=save_all,
-    mayers_mult_scat_events=100 #reduce points for monte carlo sim for testing, remove for prod
 )
 
 # Vanadium only
