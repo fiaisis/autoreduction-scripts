@@ -1,6 +1,7 @@
+from mantid.kernel import ConfigService
 from pathlib import Path
-from isis_powder.gem import Gem
-from isis_powder import SampleDetails
+from Diffraction.isis_powder.gem import Gem
+from Diffraction.isis_powder import SampleDetails
 import shutil
 import yaml
 
@@ -9,9 +10,9 @@ import yaml
 # autoreduction
 ######
 
-runno = "102137"
+runno = "103802"
 # Set the mode for reduction
-mode = "Rietveld"
+mode = "PDF"
 # Set to False to skip vanadium normalisation step
 van_norm = True
 # Set to False to skip absorption corrections
@@ -24,11 +25,11 @@ input_mode = "Individual"
 # Set to True to save all intermediate workspaces, False to only save final focused workspace
 save_all = True
 
-cycle = "cycle_26_1"
+cycle = "cycle_26_3"
 
 output = f"GEM{runno}.nxs"
 
-offset_file = "offsets_2023_cycle231.cal"
+offset_file = "GEM_Offsets_26_3_SRM_640_C.cal"
 offset_file_base_path = Path(f"/extras/gem/{offset_file}")
 rietveldvanrunnumbers = 96663
 rietveldemptyrunnumbers = 96664
@@ -82,7 +83,6 @@ gem = Gem(
     do_absorb_corrections=do_absorb_corrections,
     input_mode=input_mode,
     save_all=save_all,
-    mayers_mult_scat_events=100 #reduce points for monte carlo sim for testing, remove for prod
 )
 
 # Vanadium only
@@ -139,7 +139,6 @@ gem.focus(
     input_mode=input_mode,
     mode=mode,
     run_number=runno,
-    unit_to_keep="dSpacing",
     keep_raw_workspace=False,
     save_all=save_all,
     #focused_cropping_values=focused_cropping_values,
