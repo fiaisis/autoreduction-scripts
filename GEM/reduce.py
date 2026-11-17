@@ -57,12 +57,12 @@ persistent_calibration_directory = Path(r"/gem/Calibrations")
 persistent_cycle_path = persistent_calibration_directory / cycle
 
 # --- Per-run temporary calibration directory to avoid file locking between concurrent runs ---
-temp_cal_dir = Path(f"/gem/tmp_cal_{runno}_{uuid.uuid4().hex[:8]}")
+temp_cal_dir = Path(f"/tmp/gem/tmp_cal_{runno}_{uuid.uuid4().hex[:8]}")
 temp_cal_dir.mkdir(parents=True, exist_ok=True)
 
 # --- Clean up orphaned temp directories from previous runs that did not clean up after themselves ---
 MAX_TEMP_DIR_AGE_SECONDS = 6 * 60 * 60  # 6 hours (matches MAX_TIME_TO_COMPLETE_JOB)
-gem_base = Path("/gem")
+gem_base = Path("/tmp/gem")
 now = time.time()
 for entry in gem_base.iterdir():
     if entry.is_dir() and entry.name.startswith("tmp_cal_"):
