@@ -24,6 +24,7 @@ if ngem:
     from mantid.simpleapi import LoadNGEM, Rebin, MoveInstrumentComponent, SaveNexus
     import numpy as np
     import os
+    import shutil
 
     print("Loading folder: %s", ngem_path)
 
@@ -51,7 +52,14 @@ if ngem:
 
     pos = ws.getInstrument().getComponentByName('source').getPos()
     MoveInstrumentComponent(ws, 'source', X=0, Y=0, Z=-(pos[2] + L))
-    SaveNexus(InputWorkspace="ws", Filename=os.path.join(output, filename))
+    saved_file = os.path.join(output, filename)
+    SaveNexus(InputWorkspace="ws", Filename=saved_file)
+
+    # Also copy the saved file to /output so the reduced data is available on the output mount.
+    # /output is expected to already exist (mounted by the runner), so this raises if it doesn't.
+    copied_file = shutil.copy2(saved_file, os.path.join(output_path, filename))
+    print("Copied to:", copied_file)
+
     output = filename
 
 
