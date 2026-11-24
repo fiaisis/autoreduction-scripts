@@ -3,6 +3,8 @@ from pathlib import Path
 from Diffraction.isis_powder.gem import Gem
 from Diffraction.isis_powder import SampleDetails
 import shutil
+import uuid
+import time
 import yaml
 
 
@@ -50,17 +52,10 @@ cal_mapping_file = f"GEM_{cycle}_calibration_mapping.yaml"
 grouping_file = "GEM_Instrument_grouping.cal"
 grouping_file_base_path = f"extras/gem/{grouping_file}"
 
-calibration_directory = Path(r"/gem/Calibrations")
-cal_cycle_path = Path(calibration_directory, cycle)
-print(f"creating dir {cal_cycle_path}")
-cal_cycle_path.mkdir(parents=True, exist_ok=True)
-print(f"Moving {offset_file} into {cal_cycle_path}")
-shutil.copy(offset_file_base_path, cal_cycle_path)
-print(f"Moving {grouping_file} into {calibration_directory}")
-shutil.copy(grouping_file_base_path, calibration_directory)
 
-cal_mapping_file_path = Path(calibration_directory, cal_mapping_file)
-offset_file_path = Path(calibration_directory, offset_file)
+# --- Per-run temporary calibration directory to avoid file locking between concurrent runs ---
+temp_cal_dir = Path(f"/tmp/gem/tmp_cal_{runno}_{uuid.uuid4().hex[:8]}")
+temp_cal_dir.mkdir(parents=True, exist_ok=True)
 
 def generate_mapping_file(cal_mapping_file_path, mapping_file_data):
     try:
@@ -70,12 +65,28 @@ def generate_mapping_file(cal_mapping_file_path, mapping_file_data):
     except Exception as e:
         print(f"Error occurred while generating mapping file: {e}")
 
+
+# Create cycle subdirectory inside the temp calibration directory
+temp_cycle_path = temp_cal_dir / cycle
+print(f"creating dir {temp_cycle_path}")
+temp_cycle_path.mkdir(parents=True, exist_ok=True)
+
+# Copy offset file from /extras into temp cycle directory
+print(f"Copying {offset_file} into {temp_cycle_path}")
+shutil.copy(offset_file_base_path, temp_cycle_path)
+
+# Copy grouping file from /extras into temp calibration root
+print(f"Copying {grouping_file} into {temp_cal_dir}")
+shutil.copy(grouping_file_base_path, temp_cal_dir)
+
+# Generate the mapping YAML inside the temp directory
+temp_mapping_file_path = temp_cal_dir / cal_mapping_file
 print(f"Generating mapping file {cal_mapping_file}")
-generate_mapping_file(cal_mapping_file_path, mapping_file_data)
+generate_mapping_file(temp_mapping_file_path, mapping_file_data)
 
 
 gem = Gem(
-    calibration_directory=calibration_directory,
+    calibration_directory=temp_cal_dir,
     output_directory=Path("/output"),
     user_name="Autoreduction",
     mode = mode,
@@ -85,11 +96,7 @@ gem = Gem(
     save_all=save_all,
 )
 
-# Vanadium only
-# isis_powder checks for existing splined vanadium files.
-# If they exist, create_vanadium is a no-op effectively.
-# If you pre-compute vanadium and store in /extras/gem/,
-# you can remove this block entirely.
+# Vanadium
 
 sample_details = SampleDetails(height=4.0, radius=0.2985, center=[0, 0, 0], shape='cylinder')
 sample_details.set_material(chemical_formula='Si', packing_fraction=0.6)
@@ -98,7 +105,7 @@ gem.set_sample_details(sample=sample_details)
 
 gem.create_vanadium(
     first_cycle_run_no=first_cycle_run_no,
-    calibration_mapping_file=cal_mapping_file_path,
+    calibration_mapping_file=temp_mapping_file_path,
     mode=mode,
     do_absorb_corrections=True, #these need to be true for vanadium
     multiple_scattering=True, #Might need to be true always
@@ -133,7 +140,7 @@ print(f"Starting focus for run {runno} with mode {mode} and input mode {input_mo
 #     raise ValueError(f"Invalid mode: {mode}. Expected 'PDF' or 'Rietveld'.")
 
 gem.focus(
-    calibration_mapping_file=cal_mapping_file_path,
+    calibration_mapping_file=temp_mapping_file_path,
     do_absorb_corrections=do_absorb_corrections,
     multiple_scattering=False,
     input_mode=input_mode,
@@ -144,4 +151,6 @@ gem.focus(
     #focused_cropping_values=focused_cropping_values,
 )
 
+
 print(f"Reduction completed for run {runno}. Output files: {output}")
+
