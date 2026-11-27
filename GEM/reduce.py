@@ -4,32 +4,34 @@ from Diffraction.isis_powder.gem import Gem
 from Diffraction.isis_powder import SampleDetails
 import shutil
 import uuid
-import time
 import yaml
+import os
 
 
 ######
 # autoreduction
 ######
 
-runno = "103802"
+runno = "103896"
 # Set the mode for reduction
-mode = "PDF"
+mode = "Rietveld"
 # Set to False to skip vanadium normalisation step
-van_norm = True
+van_norm = "True"
 # Set to False to skip absorption corrections
-do_absorb_corrections = False
+do_absorb_corrections = "False"
 # Indicates whether to account for the effects of multiple scattering when calculating 
 # absorption corrections. If do_absorb_corrections is set to True this parameter must be set.
-multiple_scattering = False
+multiple_scattering = "False"
 # Summed, Individual
 input_mode = "Individual"
 # Set to True to save all intermediate workspaces, False to only save final focused workspace
 save_all = True
 
-cycle = "cycle_26_3"
+cycle = "cycle_26_4"
 
 output = f"GEM{runno}.nxs"
+gss_filename=f"gsasGEM{runno}.gsas"
+dat_files_directory=Path(f"/output/{cycle}/Autoreduction/{runno}/dat_files")
 
 offset_file = "GEM_Offsets_26_3_SRM_640_C.cal"
 offset_file_base_path = Path(f"/extras/gem/{offset_file}")
@@ -148,9 +150,16 @@ gem.focus(
     run_number=runno,
     keep_raw_workspace=False,
     save_all=save_all,
+    gss_filename=gss_filename,
+    dat_files_directory=dat_files_directory,
     #focused_cropping_values=focused_cropping_values,
 )
 
+# Make zip file of dat files
+archive_name = os.path.join("/output", f"GEM_{runno}_dat_files")
 
-print(f"Reduction completed for run {runno}. Output files: {output}")
+shutil.make_archive(archive_name, 'zip', root_dir=dat_files_directory)
 
+output_files = [output, gss_filename, f"GEM_{runno}_dat_files.zip"]
+
+print(f"Reduction completed for run {runno}. Output files: {output, gss_filename, f'GEM_{runno}_dat_files.zip'}")
